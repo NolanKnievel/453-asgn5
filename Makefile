@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra
 
-minls: minls.c util.h
+minls: minls.o util.o
 	$(CC) $(CFLAGS) -o minls minls.o util.o
 
 util.o: util.c util.h

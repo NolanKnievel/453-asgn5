@@ -1,25 +1,18 @@
-#include "minls"
 #include <string.h>
 #include <unistd.h>
+#include "util.h"
+#include "stdio.h"
 
-typedef struct {
-    int verbose; 
-    char *part; // defaults to NULL if not provided - no partition
-    char *subpart; // defaults to NULL if not provided
-    char *imagefile; 
-    char *path; // defaults to '/' if not provided. '/' added to paths not including one
-} Config;
 
 
 int parse_args(int argc, char *argv[], Config *config) {
-    char *arg;
     int i = 1;
 
     // set defaults
     config->verbose = 0;
     config->part = NULL;
     config->subpart = NULL;
-    confige->imagefile = NULL;
+    config->imagefile = NULL;
     config->path = NULL;
     
 
@@ -30,7 +23,7 @@ int parse_args(int argc, char *argv[], Config *config) {
             i++;
         }
         // -p
-        else if(strcmp(argv[i], "-p" == 0)) {
+        else if(strcmp(argv[i], "-p") == 0) {
             if (i+1 >= argc) {
                 fprintf(stderr, "-p requires a part number\n");
                 return -1;
@@ -39,7 +32,7 @@ int parse_args(int argc, char *argv[], Config *config) {
             i += 2;
 
             // -s
-            if(strcmp(argv[i], "-s" == 0)) {
+            if(strcmp(argv[i], "-s") == 0) {
                 if (i+1 >= argc) {
                     fprintf(stderr, "-v requires a subpart number\n");
                     return -1;
@@ -57,25 +50,33 @@ int parse_args(int argc, char *argv[], Config *config) {
         // path
         else if(config->path == NULL) {
             config->path = argv[i];
-            i++
+            i++;
         }
         else {
-            fprintf(stderr, "Unexpected argument: %s\n", argv[i]);
+            fprintf(stderr, "Unexpected arguments, please follow the pattern: \n minls [ -v ] [ -p part [ -s subpart ] ] imagefile [ path ]\n");
             return -1;
         }
     }
 
 
     // validate args
-    if (cfg->imagefile == NULL) {
+    if (config->imagefile == NULL) {
         fprintf(stderr, "Missing required imagefile\n");
         return -1;
     }
 
-    if (cfg->has_subpart && !cfg->has_part) {
+    if (config->subpart && !config->part) {
         fprintf(stderr, "-s cannot be used without -p\n");
         return -1;
     }
+
+    // print config for testing
+    printf("Config:\n");
+    printf("  Verbose: %d\n", config->verbose);
+    printf("  Part: %s\n", config->part ? config->part : "NULL");
+    printf("  Subpart: %s\n", config->subpart ? config->subpart : "NULL");
+    printf("  Imagefile: %s\n", config->imagefile ? config->imagefile : "NULL");
+    printf("  Path: %s\n", config->path ? config->path : "NULL");
 
     return 0;
         

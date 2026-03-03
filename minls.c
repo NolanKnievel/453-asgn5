@@ -6,7 +6,7 @@ int main(int argc, char *argv[]) {
     Config config;
 
     printf("hello world!\n");
-    parse_args(argc, argv, config);
+    parse_args(argc, argv, &config);
 
 
     return 0;
