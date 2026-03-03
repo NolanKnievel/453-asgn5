@@ -2,18 +2,18 @@
 #include <unistd.h>
 #include "util.h"
 #include "stdio.h"
+#include "stdlib.h"
 
 
-
+// parse args and update config struct to match
 int parse_args(int argc, char *argv[], Config *config) {
     int i = 1;
 
     // set defaults
     config->verbose = 0;
-    config->part = NULL;
-    config->subpart = NULL;
+    config->part = -1;
+    config->subpart = -1;
     config->imagefile = NULL;
-    config->path = NULL;
     
 
     while(i < argc) {
@@ -28,7 +28,7 @@ int parse_args(int argc, char *argv[], Config *config) {
                 fprintf(stderr, "-p requires a part number\n");
                 return -1;
             }
-            config->part = argv[i+1];
+            config->part = atoi(argv[i+1]);
             i += 2;
 
             // -s
@@ -37,7 +37,7 @@ int parse_args(int argc, char *argv[], Config *config) {
                     fprintf(stderr, "-v requires a subpart number\n");
                     return -1;
                 }
-                config->subpart = argv[i+1];
+                config->subpart = atoi(argv[i+1]);
                 i += 2;
             }
         }
@@ -48,7 +48,7 @@ int parse_args(int argc, char *argv[], Config *config) {
             i++;
         }
         // path
-        else if(config->path == NULL) {
+        else if(strcmp(config->path, "/") == 0) {
             config->path = argv[i];
             i++;
         }
@@ -57,7 +57,6 @@ int parse_args(int argc, char *argv[], Config *config) {
             return -1;
         }
     }
-
 
     // validate args
     if (config->imagefile == NULL) {
@@ -70,14 +69,16 @@ int parse_args(int argc, char *argv[], Config *config) {
         return -1;
     }
 
-    // print config for testing
-    printf("Config:\n");
-    printf("  Verbose: %d\n", config->verbose);
-    printf("  Part: %s\n", config->part ? config->part : "NULL");
-    printf("  Subpart: %s\n", config->subpart ? config->subpart : "NULL");
-    printf("  Imagefile: %s\n", config->imagefile ? config->imagefile : "NULL");
-    printf("  Path: %s\n", config->path ? config->path : "NULL");
 
+    // verbose - print parsed config
+    if(config->verbose) {
+        printf("Config:\n");
+        printf("  Verbose: %d\n", config->verbose);
+        printf("  Part: %i\n", config->part != -1 ? config->part : -1);
+        printf("  Subpart: %i\n", config->subpart != -1 ? config->subpart : -1);
+        printf("  Imagefile: %s\n", config->imagefile ? config->imagefile : "NULL");
+        printf("  Path: %s\n", config->path ? config->path : "NULL");
+    }
     return 0;
         
 }
