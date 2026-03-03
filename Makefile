@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -Werror
 
 minls: minls.o util.o
 	$(CC) $(CFLAGS) -o minls minls.o util.o
@@ -12,3 +12,5 @@ minls.o: minls.c minls.h
 
 clean: 
 	rm -f minls *.o
+
+.PHONY: clean
