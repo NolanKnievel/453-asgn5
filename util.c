@@ -1,8 +1,10 @@
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
 #include "util.h"
 #include "stdio.h"
 #include "stdlib.h"
+
 
 
 // parse args and update config struct to match
@@ -79,12 +81,12 @@ int parse_args(int argc, char *argv[], Config *config) {
         printf("  Path: %s\n", config->path ? config->path : "NULL");
     }
     return 0;
-        
+}
 
 // read partition table into array of partition_table_entry, return -1 if
 // the partition table is invalid
 int read_partition_table(int fd, struct partition_table_entry *entries) {
-    char mbr[MBR_SIZE];
+    uint8_t mbr[MBR_SIZE];
 
     // read MBR
     if (lseek(fd, 0, SEEK_SET) == -1) {

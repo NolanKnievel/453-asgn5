@@ -27,9 +27,7 @@ struct partition_table_entry {
     uint8_t end_cyl; // - IGNORE
     uint32_t lFirst; // First sector (LBA addressing) - USE THIS
     uint32_t size; // size of partition (in sectors) - USE THIS
-
-
-}
+};
 
 struct superblock { 
     /* on disk. These fields and orientation are non–negotiable */
