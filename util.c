@@ -101,6 +101,12 @@ int read_partition_table(int fd, struct partition_table_entry *entries, size_t s
         perror("read");
         return -1;
     }
+    // debug prints
+    printf("sig: %02x %02x\n", mbr[510], mbr[511]);
+    for (int i = 0; i < 16; i++) {
+        printf("%02x ", mbr[i]);
+    }
+printf("\n");
 
     // validate boot signature
     if (mbr[510] != 0x55 || mbr[511] != 0xAA) {
