@@ -18,6 +18,20 @@ int main(int argc, char *argv[]) {
     }
     parse_args(argc, argv, &config);
 
+    // open image file
+    int fd = open(config.imagefile, O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        return 1;
+    }
+
+    // get array of partition entry structs
+    struct partition_table_entry partition_entries[NUM_PARTITIONS];
+    if (read_partition_table(config.imagefile, partition_entries, 0) == -1) {
+        fprintf(stderr, "Failed to read partition table\n");
+        return 1;
+    }
+
 
     printf("hello world!\n");
 

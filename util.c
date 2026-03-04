@@ -83,17 +83,18 @@ int parse_args(int argc, char *argv[], Config *config) {
     return 0;
 }
 
-// read partition table into array of partition_table_entry, return -1 if
+
+// read partition table into an array of partition_table_entry, return -1 if
 // the partition table is invalid
-int read_partition_table(int fd, struct partition_table_entry *entries) {
+// start marks the start of the disk(or partition if we're reading subpartition entries)
+int read_partition_table(int fd, struct partition_table_entry *entries, size_t start) {
     uint8_t mbr[MBR_SIZE];
 
     // read MBR
-    if (lseek(fd, 0, SEEK_SET) == -1) {
+    if (lseek(fd, start, SEEK_SET) == -1) {
         perror("lseek");
         return -1;
     }
-
     if (read(fd, mbr, MBR_SIZE) != MBR_SIZE) {
         perror("read");
         return -1;
