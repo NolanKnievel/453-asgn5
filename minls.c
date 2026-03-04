@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include "minls.h"
 #include "util.h"
 
@@ -32,6 +33,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // close image file
+    close(fd);
 
     printf("hello world!\n");
 
