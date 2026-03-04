@@ -16,7 +16,7 @@ typedef struct {
 } Config;
 
 
-struct partition_table_entry {
+struct __attribute__((packed)) partition_table_entry {
     uint8_t bootind; // Boot magic number (0x80 if bootable) - IGNORE
     uint8_t start_head; // Start of partition in CHS - IGNORE
     uint8_t start_sec; //  - IGNORE
@@ -29,7 +29,8 @@ struct partition_table_entry {
     uint32_t size; // size of partition (in sectors) - USE THIS
 };
 
-struct superblock { 
+
+struct __attribute__((packed)) superblock {
     /* on disk. These fields and orientation are non–negotiable */
     uint32_t ninodes; /* number of inodes in this filesystem */
     uint16_t pad1; /* make things line up properly */
