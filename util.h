@@ -1,3 +1,6 @@
+#include <stdint.h>
+
+
 #define PARTITION_TABLE_OFFSET 0x1BE
 #define PARTITION_TABLE_SIZE 512
 #define MBR_SIZE 512
