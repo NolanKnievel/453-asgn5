@@ -88,9 +88,8 @@ int parse_args(int argc, char *argv[], Config *config) {
 // read partition table into an array of partition_table_entry, return -1 if
 // the partition table is invalid
 // start marks the start of the disk(or partition if we're reading subpartition entries)
-int read_partition_table(int fd, struct partition_table_entry *entries, size_t start) {
+int read_partition_table(int fd, struct partition_table_entry *entries, size_t start, Config *config) {
     uint8_t mbr[MBR_SIZE];
-    int i;
 
     // read MBR
     if (lseek(fd, start, SEEK_SET) == -1) {
@@ -103,7 +102,7 @@ int read_partition_table(int fd, struct partition_table_entry *entries, size_t s
         return -1;
     }
     // debug prints
-    if (config.verbose) {
+    if (config->verbose) {
         printf("sig: %02x %02x\n", mbr[510], mbr[511]);
         printf("\n");
     }

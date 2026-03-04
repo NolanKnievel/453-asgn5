@@ -49,4 +49,4 @@ struct __attribute__((packed)) superblock {
 
 int parse_args(int argc, char *argv[], Config *config);
 
-int read_partition_table(int fd, struct partition_table_entry *entries, size_t start);
+int read_partition_table(int fd, struct partition_table_entry *entries, size_t start, Config *config);

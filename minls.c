@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 
     // get array of partition entry structs
     struct partition_table_entry partition_entries[NUM_PARTITIONS];
-    if (read_partition_table(fd, partition_entries, 0) == -1) {
+    if (read_partition_table(fd, partition_entries, 0, &config) == -1) {
         fprintf(stderr, "Failed to read partition table\n");
         return 1;
     }
