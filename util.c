@@ -103,12 +103,10 @@ int read_partition_table(int fd, struct partition_table_entry *entries, size_t s
         return -1;
     }
     // debug prints
-    printf("sig: %02x %02x\n", mbr[510], mbr[511]);
-    for (i = 0; i < 16; i++) {
-        printf("%02x ", mbr[i]);
+    if (config.verbose) {
+        printf("sig: %02x %02x\n", mbr[510], mbr[511]);
+        printf("\n");
     }
-printf("\n");
-
     // validate boot signature
     if (mbr[510] != 0x55 || mbr[511] != 0xAA) {
         fprintf(stderr, "Invalid partition table\n");
