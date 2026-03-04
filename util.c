@@ -8,6 +8,7 @@
 
 
 // parse args and update config struct to match
+// ~pn-cs453/Given/Asgn5/Images
 int parse_args(int argc, char *argv[], Config *config) {
     int i = 1;
 
@@ -95,6 +96,7 @@ int read_partition_table(int fd, struct partition_table_entry *entries, size_t s
         perror("lseek");
         return -1;
     }
+    printf("reading at: %zu %i bytes\n", start, MBR_SIZE);
     if (read(fd, mbr, MBR_SIZE) != MBR_SIZE) {
         perror("read");
         return -1;
