@@ -48,4 +48,4 @@ struct superblock {
 
 int parse_args(int argc, char *argv[], Config *config);
 
-int read_partition_table(int fd, struct partition_table_entry *entries);
+int read_partition_table(int fd, struct partition_table_entry *entries, size_t start);
