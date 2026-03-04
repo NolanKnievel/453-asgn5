@@ -90,6 +90,7 @@ int parse_args(int argc, char *argv[], Config *config) {
 // start marks the start of the disk(or partition if we're reading subpartition entries)
 int read_partition_table(int fd, struct partition_table_entry *entries, size_t start) {
     uint8_t mbr[MBR_SIZE];
+    int i;
 
     // read MBR
     if (lseek(fd, start, SEEK_SET) == -1) {
@@ -103,7 +104,7 @@ int read_partition_table(int fd, struct partition_table_entry *entries, size_t s
     }
     // debug prints
     printf("sig: %02x %02x\n", mbr[510], mbr[511]);
-    for (int i = 0; i < 16; i++) {
+    for (i = 0; i < 16; i++) {
         printf("%02x ", mbr[i]);
     }
 printf("\n");
