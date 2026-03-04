@@ -47,5 +47,4 @@ struct superblock {
 
 int parse_args(int argc, char *argv[], Config *config);
 
-int is_valid_partition_table(uint8_t *buf);
-
+int read_partition_table(int fd, struct partition_table_entry *entries);
