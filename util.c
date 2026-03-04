@@ -14,7 +14,6 @@ int parse_args(int argc, char *argv[], Config *config) {
     config->part = -1;
     config->subpart = -1;
     config->imagefile = NULL;
-    
 
     while(i < argc) {
         // -v
@@ -81,4 +80,32 @@ int parse_args(int argc, char *argv[], Config *config) {
     }
     return 0;
         
+
+// read partition table into array of partition_table_entry, return -1 if
+// the partition table is invalid
+int read_partition_table(int fd, struct partition_table_entry *entries) {
+    char mbr[MBR_SIZE];
+
+    // read MBR
+    if (lseek(fd, 0, SEEK_SET) == -1) {
+        perror("lseek");
+        return -1;
+    }
+
+    if (read(fd, mbr, MBR_SIZE) != MBR_SIZE) {
+        perror("read");
+        return -1;
+    }
+
+    // validate boot signature
+    if (mbr[510] != 0x55 || mbr[511] != 0xAA) {
+        fprintf(stderr, "Invalid partition table\n");
+        return -1;
+    }
+
+    // copy partition entries
+    memcpy(entries, mbr + PARTITION_TABLE_OFFSET,
+           NUM_PARTITIONS * sizeof(struct partition_table_entry));
+
+    return 0;
 }
