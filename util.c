@@ -71,7 +71,6 @@ int parse_args(int argc, char *argv[], Config *config) {
         return -1;
     }
 
-
     // verbose - print parsed config
     if(config->verbose) {
         printf("Config:\n");
@@ -88,7 +87,9 @@ int parse_args(int argc, char *argv[], Config *config) {
 // read partition table into an array of partition_table_entry, return -1 if
 // the partition table is invalid
 // start marks the start of the disk(or partition if we're reading subpartition entries)
-int read_partition_table(int fd, struct partition_table_entry *entries, size_t start, Config *config) {
+int read_partition_table(int fd, struct partition_table_entry *entries, off_t start, Config *config) {
+    //do we need to consider that a 'byte' can be different on different systems?
+    //can only read the signature of ~/HardDisk image on CSL
     uint8_t mbr[MBR_SIZE];
 
     // read MBR
@@ -107,14 +108,16 @@ int read_partition_table(int fd, struct partition_table_entry *entries, size_t s
         printf("\n");
     }
     // validate boot signature
-    if (mbr[510] != 0x55 || mbr[511] != 0xAA) {
+    //printf("validating signature...\n");
+    if ((mbr[510] != 0x55) || (mbr[511] != 0xAA)) {
         fprintf(stderr, "Invalid partition table\n");
         return -1;
     }
-
     // copy partition entries
+    //printf("copying to pointer...\n");
     memcpy(entries, mbr + PARTITION_TABLE_OFFSET,
            NUM_PARTITIONS * sizeof(struct partition_table_entry));
-
+    
     return 0;
 }
+

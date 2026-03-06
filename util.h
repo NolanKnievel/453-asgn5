@@ -1,5 +1,14 @@
 #include <stdint.h>
+#include <sys/types.h>
 
+
+#define BYTES_PER_SECTOR 512
+
+#define SUPERBLOCK_OFFSET 1024
+#define SUPERBLOCK_SIZE_BYTES 31
+#define NUM_SUB_PARTITIONS 4
+#define MAGIC_NUM 0x4D5A
+#define MAGIC_NUM_REV 0x5A4D
 
 #define PARTITION_TABLE_OFFSET 0x1BE
 #define PARTITION_TABLE_SIZE 512
@@ -49,4 +58,4 @@ struct __attribute__((packed)) superblock {
 
 int parse_args(int argc, char *argv[], Config *config);
 
-int read_partition_table(int fd, struct partition_table_entry *entries, size_t start, Config *config);
+int read_partition_table(int fd, struct partition_table_entry *entries, off_t start, Config *config);
