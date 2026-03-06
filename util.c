@@ -121,3 +121,42 @@ int read_partition_table(int fd, struct partition_table_entry *entries, off_t st
     return 0;
 }
 
+int read_superblock(int fd, struct superblock* superblock_entry, int start, Config* config){
+    off_t sb_offset = (off_t)(start + SUPERBLOCK_OFFSET);
+
+    //using lseek + read
+    if(lseek(fd, sb_offset, SEEK_SET) == -1){
+        fprintf(stderr, "lseek\n");
+        return 1;
+    }
+    if(read(fd, superblock_entry, SUPERBLOCK_SIZE_BYTES) == -1){
+        fprintf(stderr, "read");
+        return 1;
+    }
+    
+    //debug prints
+    printf("superblock magic num: %02x\n", superblock_entry->magic);
+    if(superblock_entry->magic != MAGIC_NUM) {
+        fprintf(stderr, "magic num\n");
+        return 1;
+    }
+
+    if(config->verbose){
+        printf("Superblock Contents:\n");
+        printf("Store Fields:\n");
+        printf("ninodes           %u\n",  superblock_entry->ninodes);
+        printf("i_blocks          %u\n", superblock_entry->i_blocks);
+        printf("z_blocks          %d\n", superblock_entry->z_blocks);
+        printf("firstdata         %u\n", superblock_entry->firstdata);
+        printf("log_zone_size     %d\n", superblock_entry->log_zone_size);
+        printf("max_file          %u\n", superblock_entry->max_file);
+        printf("zones             %u\n", superblock_entry->zones);
+        printf("magic             %04x\n", superblock_entry->magic);
+        printf("blocksize         %u\n", superblock_entry->blocksize);
+        printf("subversion        %u\n\n", superblock_entry->subversion);
+    }
+    
+
+    return 1;
+}
+

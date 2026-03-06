@@ -15,6 +15,20 @@
 #define MBR_SIZE 512
 #define NUM_PARTITIONS 4
 
+//still deciding whether we need this or not, same amount of lines
+#define SUPERBLOCK_CONTENTS "Superblock Contents:\n \
+        Store Fields:\n\
+        ninodes           %u\n \
+        i_blocks          %u\n \
+        z_blocks          %d\n \
+        firstdata         %u\n \
+        log_zone_size     %d\n \
+        max_file          %u\n \
+        zones             %u\n \
+        magic             %04x\n \
+        blocksize         %u\n \
+        subversion        %u\n\n"
+
 // struct to store command line arguments
 typedef struct {
     int verbose; 
@@ -59,3 +73,5 @@ struct __attribute__((packed)) superblock {
 int parse_args(int argc, char *argv[], Config *config);
 
 int read_partition_table(int fd, struct partition_table_entry *entries, off_t start, Config *config);
+
+int read_superblock(int fd, struct superblock* superblock_entry, int start, Config* config);
