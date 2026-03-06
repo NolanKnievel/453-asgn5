@@ -15,6 +15,8 @@
 #define MBR_SIZE 512
 #define NUM_PARTITIONS 4
 
+#define DIRECT_ZONES 7
+
 //still deciding whether we need this or not, same amount of lines
 #define SUPERBLOCK_CONTENTS "Superblock Contents:\n \
         Store Fields:\n\
@@ -83,7 +85,7 @@ struct __attribute__((packed)) inode {
     uint32_t indirect;
     uint32_t two_indirect;
     uint32_t unused;
-}
+};
 
 
 
