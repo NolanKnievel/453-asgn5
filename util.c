@@ -160,3 +160,19 @@ int read_superblock(int fd, struct superblock* superblock_entry, int start, Conf
     return 1;
 }
 
+// read inodes into array, starting at location start, return -1 on error
+int read_inodes(int fd, struct inode *inodes, int start, int ninodes, Config *config) {
+    // seek and read
+    if (lseek(fd, start, SEEK_SET) == -1) {
+        fprintf(stderr, "lseek\n");
+        return -1;
+    }
+
+    if (read(fd, inodes, ninodes * sizeof(struct inode)) == -1) {
+        fprintf(stderr, "read");
+        return -1;
+    }
+
+    return 0;
+
+}

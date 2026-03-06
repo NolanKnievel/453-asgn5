@@ -51,10 +51,29 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "superblock read error\n");
         return 1;
     }
-   
-    
-    // close image file
+
+    // read inodes
+    struct inode *inodes = malloc(superblock_entry.ninodes * sizeof(struct inode));
+    if (inodes == NULL) {
+        perror("malloc");
+        return 1;
+    }
+    if (read_inodes(fd, inodes, partition_addr + superblock_entry.firstdata * BYTES_PER_SECTOR, superblock_entry.ninodes, &config) == -1) {
+        fprintf(stderr, "Failed to read inodes\n");
+        free(inodes);
+        return 1;
+    }
+    // verbose - print inode info
+    if(config.verbose) {
+        printf("Read %i inodes\n", superblock_entry.ninodes);
+        // print atime
+        printf("reading inode 0 atime:\n");
+        printf("  atime: %u\n", inodes[0].atime);
+    }
+
+    // cleanup
     close(fd);
+    free(inodes);
 
     printf("hello world!\n");
 

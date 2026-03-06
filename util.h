@@ -70,8 +70,27 @@ struct __attribute__((packed)) superblock {
     uint8_t subversion; /* filesystem sub–version */
 };
 
+struct __attribute__((packed)) inode {
+    uint16_t mode; /* mode */
+    uint16_t links; /* number or links */
+    uint16_t uid;
+    uint16_t gid;
+    uint32_t size;
+    int32_t atime;
+    int32_t mtime;
+    int32_t ctime;
+    uint32_t zone[DIRECT_ZONES];
+    uint32_t indirect;
+    uint32_t two_indirect;
+    uint32_t unused;
+}
+
+
+
 int parse_args(int argc, char *argv[], Config *config);
 
 int read_partition_table(int fd, struct partition_table_entry *entries, off_t start, Config *config);
 
 int read_superblock(int fd, struct superblock* superblock_entry, int start, Config* config);
+
+int read_inodes(int fd, struct inode *inodes, int start, int ninodes, Config *config);
