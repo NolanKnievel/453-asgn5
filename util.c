@@ -173,6 +173,10 @@ int read_inodes(int fd, struct inode *inodes, int start, int ninodes, Config *co
         return -1;
     }
 
+    // verbose - print inode info
+    if(config->verbose) {
+        printf("Read %i inodes\n", ninodes);
+    }
     return 0;
 
 }

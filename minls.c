@@ -64,13 +64,7 @@ int main(int argc, char *argv[]) {
         free(inodes);
         return 1;
     }
-    // verbose - print inode info
-    if(config.verbose) {
-        printf("Read %i inodes\n", superblock_entry.ninodes);
-        // print atime
-        printf("reading inode 0 atime:\n");
-        printf("  atime: %u\n", inodes[0].atime);
-    }
+
 
     // cleanup
     close(fd);
