@@ -95,4 +95,4 @@ int read_partition_table(int fd, struct partition_table_entry *entries, off_t st
 
 int read_superblock(int fd, struct superblock* superblock_entry, int start, Config* config);
 
-int read_inodes(int fd, struct inode *inodes, int start, int ninodes, Config *config);
+int read_inode(int fd, struct inode *inodes, int start, int ninodes, Config *config);

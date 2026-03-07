@@ -65,7 +65,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int zonesize = superblock_entry.blocksize << superblock_entry.log_zone_size;
     // read inode 1 as a test
     if (read_inode(fd, inodes, partition_addr + SUPERBLOCK_OFFSET + 3 * superblock_entry.blocksize, 1, &config) == -1) {
         fprintf(stderr, "Failed to read inode 1\n");
