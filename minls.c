@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 
     // cleanup
     close(fd);
-    free(inodes);
+    free(inode_1);
 
     printf("hello world!\n");
 
