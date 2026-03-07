@@ -59,8 +59,8 @@ int main(int argc, char *argv[]) {
     }
 
     // read inodes
-    struct inode *inodes = malloc(superblock_entry.ninodes * sizeof(struct inode));
-    if (inodes == NULL) {
+    struct inode *inode_1 = malloc(sizeof(struct inode));
+    if (inode_1 == NULL) {
         perror("malloc");
         return 1;
     }
@@ -71,9 +71,9 @@ int main(int argc, char *argv[]) {
     * superblock_entry.blocksize;
 
     // read inode 1 as a test
-    if (read_inode(fd, inodes, inode_start, 1, &config) == -1) {
+    if (read_inode(fd, inode_1, inode_start, 1, &config) == -1) {
         fprintf(stderr, "Failed to read inode 1\n");
-        free(inodes);
+        free(inode_1);
         return 1;
     }
 
