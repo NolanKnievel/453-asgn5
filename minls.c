@@ -64,8 +64,11 @@ int main(int argc, char *argv[]) {
         perror("malloc");
         return 1;
     }
-    if (read_inodes(fd, inodes, partition_addr + superblock_entry.firstdata * BYTES_PER_SECTOR, superblock_entry.ninodes, &config) == -1) {
-        fprintf(stderr, "Failed to read inodes\n");
+
+    int zonesize = superblock_entry.blocksize << superblock_entry.log_zone_size;
+    // read inode 1 as a test
+    if (read_inode(fd, inodes, partition_addr + SUPERBLOCK_OFFSET + 3 * superblock_entry.blocksize, 1, &config) == -1) {
+        fprintf(stderr, "Failed to read inode 1\n");
         free(inodes);
         return 1;
     }
