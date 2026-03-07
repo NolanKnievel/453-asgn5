@@ -163,15 +163,16 @@ int read_superblock(int fd, struct superblock* superblock_entry, int start, Conf
 // read inode into struct
 // inodes table starting at start
 //  return -1 on error
-int read_inode(int fd, struct inode *inode, int start, int inode_num, Config *config) {
+int read_inode(int fd, struct inode *inode, off_t start, int inode_num, Config *config) {
     // seek and read
     if (lseek(fd, start + (inode_num - 1) * sizeof(struct inode), SEEK_SET) == -1) {
         fprintf(stderr, "lseek\n");
         return -1;
     }
 
-    if (read(fd, inode, sizeof(struct inode)) == -1) {
-        fprintf(stderr, "read");
+    ssize_t bytes = read(fd, inode, sizeof(struct inode));
+    if (bytes != sizeof(struct inode)) {
+        perror("read");
         return -1;
     }
 
@@ -186,6 +187,10 @@ int read_inode(int fd, struct inode *inode, int start, int inode_num, Config *co
         printf("  mode: %u\n", inode->mode);
         printf("  uid: %u\n", inode->uid);
         printf("  gid: %u\n", inode->gid);
+
+        for (int i = 0; i < 7; i++) {
+            printf("  zone[%d]: %u\n", i, inode->zone[i]);
+        }   
     }
     return 0;
 }

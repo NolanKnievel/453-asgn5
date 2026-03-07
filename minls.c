@@ -65,8 +65,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    off_t inode_start =
+    partition_addr +
+    (2 + superblock_entry.i_blocks + superblock_entry.z_blocks)
+    * superblock_entry.blocksize;
+
     // read inode 1 as a test
-    if (read_inode(fd, inodes, partition_addr + SUPERBLOCK_OFFSET + 3 * superblock_entry.blocksize, 1, &config) == -1) {
+    if (read_inode(fd, inodes, inode_start, 1, &config) == -1) {
         fprintf(stderr, "Failed to read inode 1\n");
         free(inodes);
         return 1;
