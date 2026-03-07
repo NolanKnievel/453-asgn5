@@ -178,6 +178,13 @@ int read_inode(int fd, struct inode *inode, int start, int inode_num, Config *co
     // verbose - print inode info
     if(config->verbose) {
         printf("read inode %i\n", inode_num);
+        printf("  atime: %u\n", inode->atime);
+        printf("  ctime: %u\n", inode->ctime);
+        printf("  mtime: %u\n", inode->mtime);
+        printf("  size: %u\n", inode->size);
+        printf("  blocks: %u\n", inode->blocks);
+        printf("  flags: %u\n", inode->flags);
+        printf("  zone: %u\n", inode->zone);
     }
     return 0;
 }
