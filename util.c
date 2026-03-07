@@ -110,7 +110,7 @@ int read_partition_table(int fd, struct partition_table_entry *entries, off_t st
     // validate boot signature
     //printf("validating signature...\n");
     if ((mbr[510] != 0x55) || (mbr[511] != 0xAA)) {
-        fprintf(stderr, "Invalid partition table\n");
+        // no partitions
         return -1;
     }
     // copy partition entries
@@ -160,23 +160,24 @@ int read_superblock(int fd, struct superblock* superblock_entry, int start, Conf
     return 1;
 }
 
-// read inodes into array, starting at location start, return -1 on error
-int read_inodes(int fd, struct inode *inodes, int start, int ninodes, Config *config) {
+// read inode into struct
+// inodes table starting at start
+//  return -1 on error
+int read_inode(int fd, struct inode *inode, int start, int inode_num, Config *config) {
     // seek and read
-    if (lseek(fd, start, SEEK_SET) == -1) {
+    if (lseek(fd, start + (inode_num - 1) * sizeof(struct inode), SEEK_SET) == -1) {
         fprintf(stderr, "lseek\n");
         return -1;
     }
 
-    if (read(fd, inodes, ninodes * sizeof(struct inode)) == -1) {
+    if (read(fd, inode, sizeof(struct inode)) == -1) {
         fprintf(stderr, "read");
         return -1;
     }
 
     // verbose - print inode info
     if(config->verbose) {
-        printf("Read %i inodes\n", ninodes);
+        printf("read inode %i\n", inode_num);
     }
     return 0;
-
 }

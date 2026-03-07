@@ -24,11 +24,16 @@ int main(int argc, char *argv[]) {
     }
 
     // get array of partition entry structs
-    printf("finding primary parititions...\n");
+    if(config.verbose) {
+        printf("finding primary partitions...\n");
+    }
     struct partition_table_entry partition_entries[NUM_PARTITIONS];
     if (read_partition_table(fd, partition_entries, 0, &config) == -1) {
-        fprintf(stderr, "Failed to read partition table\n");
-        return 1;
+        // no partition table
+        if(config.part != -1) {
+            fprintf(stderr, "Partition specified but no partition table found\n");
+            return 1;
+        }
     }
 
     //this address gets us to partition table
@@ -74,3 +79,11 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/*
+PLAN: 
+
+
+
+
+*/
