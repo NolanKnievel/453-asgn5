@@ -126,19 +126,19 @@ int read_superblock(int fd, struct superblock* superblock_entry, int start, Conf
 
     //using lseek + read
     if(lseek(fd, sb_offset, SEEK_SET) == -1){
-        fprintf(stderr, "lseek\n");
-        return 1;
+        fprintf(stderr, "superblock lseek\n");
+        return -1;
     }
     if(read(fd, superblock_entry, SUPERBLOCK_SIZE_BYTES) == -1){
-        fprintf(stderr, "read");
-        return 1;
+        fprintf(stderr, "superblock read");
+        return -1;
     }
     
     //debug prints
     printf("superblock magic num: %02x\n", superblock_entry->magic);
     if(superblock_entry->magic != MAGIC_NUM) {
         fprintf(stderr, "magic num\n");
-        return 1;
+        return -1;
     }
 
     if(config->verbose){
