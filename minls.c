@@ -27,7 +27,9 @@ int main(int argc, char *argv[]) {
     if(config.verbose) {
         printf("finding primary partitions...\n");
     }
+    
     struct partition_table_entry partition_entries[NUM_PARTITIONS];
+    int partition_addr = 0;
     if (read_partition_table(fd, partition_entries, 0, &config) == -1) {
         // no partition table
         if(config.part != -1) {
@@ -35,9 +37,10 @@ int main(int argc, char *argv[]) {
             return 1;
         }
     }
-
-    //this address gets us to partition table
-    int partition_addr = partition_entries[config.part - 1].lFirst * BYTES_PER_SECTOR;
+    else{
+        //this address gets us to partition table (if it exists)
+        partition_addr = partition_entries[config.part - 1].lFirst * BYTES_PER_SECTOR;
+    }
 
     // get array of subpartitions (optional)
     if(config.subpart != -1){
