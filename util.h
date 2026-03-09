@@ -1,6 +1,19 @@
 #include <stdint.h>
+#include <string.h>
 #include <sys/types.h>
 
+#define DIRECTORY_MASK 0040000
+#define OWNER_R 0000400
+#define OWNER_W 0000200
+#define OWNER_E 0000100
+#define REGULAR_FILE_MASK 0100000
+
+
+
+#define DIRECT_ZONES 7
+#define DIR_STRUCT_SIZE_BYTES 64
+#define MAX_DIR_NAME_SIZE_BYTES 60
+#define INODE_SIZE_BYTES 40
 
 #define BYTES_PER_SECTOR 512
 
@@ -87,6 +100,11 @@ struct __attribute__((packed)) inode {
     uint32_t unused;
 };
 
+struct __attribute__((packed)) directory {
+    uint32_t inode;
+    unsigned char name[MAX_DIR_NAME_SIZE_BYTES];
+};
+
 
 
 int parse_args(int argc, char *argv[], Config *config);
@@ -96,3 +114,18 @@ int read_partition_table(int fd, struct partition_table_entry *entries, off_t st
 int read_superblock(int fd, struct superblock* superblock_entry, int start, Config* config);
 
 int read_inode(int fd, struct inode *inodes, off_t start, int ninodes, Config *config);
+
+int dir_check(struct inode*  inode);
+
+int calc_datazone_addr(struct superblock* superblock_entry, int inum);
+
+struct inode* inum_2_inode(int fd, off_t inode_base, int inum);
+
+uint32_t traverse_path(int fd, 
+        struct superblock* superblock_entry,
+        int inode_data_start,
+        unsigned char* target);
+        
+int print_permissions(struct inode* inode_entry);
+
+int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, off_t inode_base, int inum);

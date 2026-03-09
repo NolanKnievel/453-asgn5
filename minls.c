@@ -62,28 +62,74 @@ int main(int argc, char *argv[]) {
     }
 
     // read inodes
-    struct inode *inode_1 = malloc(sizeof(struct inode));
-    if (inode_1 == NULL) {
+    struct inode *root_inode = malloc(sizeof(struct inode));
+    if (root_inode == NULL) {
         perror("malloc");
         return 1;
     }
 
     off_t inode_start =
-    partition_addr +
-    (2 + superblock_entry.i_blocks + superblock_entry.z_blocks)
-    * superblock_entry.blocksize;
+        partition_addr +
+        (2 + superblock_entry.i_blocks + superblock_entry.z_blocks)
+        * superblock_entry.blocksize;
 
-    // read inode 1 as a test
-    if (read_inode(fd, inode_1, inode_start, 1, &config) == -1) {
+    // read inode 1 (root)
+    if (read_inode(fd, root_inode, inode_start, 1, &config) == -1) {
         fprintf(stderr, "Failed to read inode 1\n");
-        free(inode_1);
+        free(root_inode);
         return 1;
     }
+    //make sure root is a directory
+    if(dir_check(root_inode) == 0){
+        fprintf(stderr, "Root is not directory\n");
+        return 1;
+    }
+    //if path not given
+    uint32_t last_inum = 1;
+    if(strcmp(config.path, " ") == 0){
+        //print root directory contents
+        printf("PRINTING ROOT DIR\n");
+        print_macros(fd, &superblock_entry, root_inode, inode_start, 1);
+        return 0;
+    }
+    //else, path is given, traverse path
+    else{
+        //locals
+        int data_start = 0;
+        char* temp;
+        unsigned char* cur_file;
+        char* delim = "/";
 
+        //confirming elements exist
+        while((temp = strtok(config.path, delim)) != NULL){
+            //calculate first data zone address for the latest inode we've searched
+            cur_file = (unsigned char*) temp;
+            data_start = calc_datazone_addr(&superblock_entry, last_inum);//
+            if((last_inum = traverse_path(fd, &superblock_entry, data_start, cur_file)) == 0){
+                fprintf(stderr, "File %s does not exist!\n", cur_file);
+                return 1;
+            }
+        }
+        printf("PATH CONFIRMED\n");
+        //file exists and fd is reset to reference superblock
+    }
+    //need to turn last_inode into struct inode to get permissions
+    //off_t inode_addr = (off_t)(inode_start + (last_inode * INODE_SIZE_BYTES));
+    
+    //need to get directory to read inode number and name
+    
+    /*METHOD 1, pread() or lseek()???
+    - move file descriptor to directories (inode's data zone)
+    - read and save inode number and name
+    - move file descriptor back to its inode struct
+    - read and print permissions
+    - print inode number and name
+    */
+    print_macros(fd, &superblock_entry, root_inode, inode_start, last_inum);
 
     // cleanup
     close(fd);
-    free(inode_1);
+    free(root_inode);
 
     printf("hello world!\n");
 

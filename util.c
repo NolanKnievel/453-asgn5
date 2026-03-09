@@ -17,6 +17,7 @@ int parse_args(int argc, char *argv[], Config *config) {
     config->part = -1;
     config->subpart = -1;
     config->imagefile = NULL;
+    config->path = " ";
 
     while(i < argc) {
         // -v
@@ -189,9 +190,198 @@ int read_inode(int fd, struct inode *inode, off_t start, int inode_num, Config *
         printf("  uid: %u\n", inode->uid);
         printf("  gid: %u\n", inode->gid);
 
-        for (i = 0; i < 7; i++) {
+        for (i = 0; i < DIRECT_ZONES; i++) {
             printf("  zone[%d]: %u\n", i, inode->zone[i]);
         }   
     }
     return 0;
+}
+
+int dir_check(struct inode* inode){
+    if((inode->mode & DIRECTORY_MASK) == 0){
+        return 0;
+    }
+    return 1;
+}
+
+int regFile_check(struct inode* inode){
+    printf("AND operation: %u\n", (inode->mode & REGULAR_FILE_MASK));
+    if((inode->mode & REGULAR_FILE_MASK) == 0){
+        return 0;
+    }
+    return 1;
+}
+
+int calc_datazone_addr(struct superblock* superblock_entry, int inum){
+    int zone_size = superblock_entry->blocksize << superblock_entry->log_zone_size;
+    int inode_data_start = zone_size * superblock_entry->firstdata
+                            + ((inum - 1) * DIRECT_ZONES); //gets us to first data zone
+    return inode_data_start;
+}
+
+//confirm given file exists
+uint32_t traverse_path(int fd, 
+        struct superblock* superblock_entry,
+        int inode_data_start,
+        unsigned char* target)
+        {
+    //locals
+    int bytes_read = 0;
+    struct directory dir;
+
+    //offset to inode's data
+    if(lseek(fd, inode_data_start, SEEK_SET) == -1){
+        fprintf(stderr, "lseek error\n");
+        return 0;
+    }
+    //read entire data zone
+    int zone_size = superblock_entry->blocksize << superblock_entry->log_zone_size;
+    while((bytes_read += read(fd, &dir, sizeof(struct directory))) <= (zone_size * DIRECT_ZONES)){
+        //traversing path
+        if(strcmp((const char*)dir.name, (const char*)target) == 0){
+            //file found
+            //resetting fd back to superblock
+            if(lseek(fd, -1 * (bytes_read + inode_data_start), SEEK_SET) == -1){
+                fprintf(stderr, "lseek error\n");
+                return 0;
+            }
+            //return inode number
+            return dir.inode;
+        }
+    }
+    if(bytes_read == -1){
+        fprintf(stderr, "Error reading directory\n");
+        return 0;
+    }
+    //resetting fd back to superblock
+    if(lseek(fd, -1 * (bytes_read + inode_data_start), SEEK_SET) == -1){
+        fprintf(stderr, "lseek error\n");
+        return 0;
+    }
+    
+    //print directory (debugging)
+    // if(config->verbose){
+    //     printf("Directory Entry:\n");
+    //     printf("    inode:%u\n", dir.inode);
+    //     printf("    name:%s\n", dir.name);
+    // }
+
+    //file not found
+    return 0;
+}
+
+unsigned char* parse_name(unsigned char* name){
+    char* ret = strtok((char*)name, "\0");
+    return (unsigned char*)ret;
+}
+
+//helper to print_content()
+int print_permissions(struct inode* inode_entry){
+    int i;
+    if(dir_check(inode_entry)){
+        printf("d");
+    }
+    else{
+        printf("-");
+    }
+    for(i = 0; i < 3; i++){
+        if((inode_entry->mode & (OWNER_R >> i)) != 0){
+            printf("r");
+        }
+        else{
+            printf("-");
+        }
+        if((inode_entry->mode & (OWNER_W >> i)) != 0){
+            printf("w");
+        }
+        else{
+            printf("-");
+        }
+        if((inode_entry->mode & (OWNER_E >> i)) != 0){
+            printf("e");
+        }
+        else{
+            printf("-");
+        }
+    }
+    return 1;
+}
+
+struct inode* inum_2_inode(int fd, off_t inode_base, int cur_offset){
+    //TODO: OFFSET IS WRONG, WE NEED TO GO BACKWARDS FROM DATA ZONES TO INODE BASE
+    struct inode* ret = malloc(sizeof(struct inode));
+    ssize_t temp = 0;
+    //need to go backwards from data done, to base inode, plus inode offset
+    if(lseek(fd , offset, SEEK_SET) == -1){//go backwards to inode base
+        fprintf(stderr, "lseek for inum_2_inode failed\n");
+        return NULL;
+    }
+    if((temp = read(fd, ret, sizeof(struct inode))) == -1){
+        fprintf(stderr, "error reading inode, inum_2_inode\n");
+        return NULL;
+    }
+    return ret;
+}
+
+int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, off_t inode_base, int inum){
+    int inode_read = 0;
+    struct directory dir;
+    struct inode cur_inode;
+
+    //if parent is directory, iterate through contents
+    if(dir_check(parent)){
+        //locals
+        uint32_t dir_read = 0;
+        //offset to target inode struct and read it
+        off_t offset = calc_datazone_addr(superblock_entry, inum);//where we're at right now
+        if(lseek(fd, offset, SEEK_SET) == -1){//offset to datazone
+            fprintf(stderr, "lseek error\n");
+            return 0;
+        }
+        //read all files referenced in data zone
+        //start reading at fd, which has been offset to the datazone of the given inode
+        while((dir_read += read(fd, &dir, sizeof(struct directory))) <= parent->size){
+            //skip deleted files
+            if(dir.inode == 0){
+                continue;
+            }
+            //get inode struct and print permissions
+            struct inode* cur_node = inum_2_inode(fd, inode_base, offset);
+            if(cur_node == NULL){
+                fprintf(stderr, "error while getting inode\n");
+                return -1;
+            }
+            print_permissions(cur_node);
+
+            //print inode in 10-digit buffer, filling right to left
+            printf("%10u", dir.inode);
+            //parse name and print it
+            size_t name_len = strlen((const char*)dir.name);
+            if(name_len > 60){
+                name_len = 60;
+            }
+            char temp_buff[name_len];
+            memcpy((void *)temp_buff, (const void*)dir.name, name_len);
+            printf(" %s\n", temp_buff);
+
+            //debug prints
+            // printf("dir inode: %d\n", dir.inode);
+            // printf("dir name: %-10s\n", dir.name);
+
+        }
+    }
+    else{
+        //file not directory, read its inode and print contents
+        printf("FILE NOT DIRECTORY\n");
+        inode_read = read(fd, &dir, sizeof(struct directory));
+        if(inode_read == -1){
+            fprintf(stderr, "error when reading dir\n");
+            return -1;
+        }
+        print_permissions(&cur_inode);
+        printf("%10d", dir.inode);
+        printf("'%s'\n", dir.name);
+    }
+    return 1;
+
 }
