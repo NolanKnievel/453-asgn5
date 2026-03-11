@@ -121,6 +121,8 @@ int strtok_count(char* path){
 // helper to read a zone
 void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config)
 {
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
+    
     if(config->verbose) {
         printf("Reading zone %d\n", zone);
     }
