@@ -120,7 +120,7 @@ int dir_check(struct inode*  inode);
 
 int calc_datazone_addr(struct superblock* superblock_entry, int inum);
 
-// struct inode* inum_2_inode(int fd, off_t inode_base, int inum);
+struct inode* inum_2_inode(int fd, int inum);
 
 uint32_t traverse_path(int fd, 
         struct superblock* superblock_entry,
