@@ -6,8 +6,14 @@ FINAL_DEP = printers.o reads.o searches.o util.o minls.o
 minls: $(FINAL_DEP)
 	$(CC) $(CFLAGS) -o minls $(FINAL_DEP)
 
+minget: $(FINAL_DEP) minget.o
+	$(CC) $(CFLAGS) -o minget $(FINAL_DEP) minget.o
+
 minls.o: minls.c minls.h
 	$(CC) $(CFLAGS) -c minls.c
+
+minget.o: minget.c minget.h
+	$(CC) $(CFLAGS) -c minget.c
 
 printers.o: util.o reads.o printers.c printers.h 
 	$(CC) $(CFLAGS) -c printers.c
