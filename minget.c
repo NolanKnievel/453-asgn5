@@ -94,13 +94,13 @@ int main(int argc, char *argv[]) {
     /* -----PATH NOT GIVEN, PRINT ROOT CONTENTS-----*/
     //if path not given
     if(strcmp(config.path, "/") == 0){
-        //print root directory contents
+        // write root directory contents
         if(config.verbose){
+            printf("no path provided, writing root directory contents to stdout\n");
             print_superblock(&superblock_entry);
             print_inode(root_inode);
         }
-        print_path(&config);
-        print_macros_dir(fd, superblock_entry.firstdata, root_inode, zonesize, inode_start, data_start);
+        copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
         return 0;
     }
     /* ----- PATH GIVEN, SEARCH FOR FILE ------*/
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     }
     copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
 
-    
+
     // cleanup
     close(fd);
     free(root_inode);
