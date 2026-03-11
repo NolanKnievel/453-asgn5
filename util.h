@@ -129,3 +129,9 @@ uint32_t traverse_path(int fd,
 int print_permissions(struct inode* inode_entry);
 
 int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, off_t inode_base, int inum);
+
+void read_zone(int fd, superblock *sb, uint32_t zone, void *buf, uint32_t fs_start);
+
+uint32_t get_file_zone(int fd, superblock *sb, inode *node, uint32_t index);
+
+void copy_file(int fd, FILE *dst, superblock *sb, inode *node);
