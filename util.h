@@ -133,6 +133,6 @@ int print_macros(int fd, struct superblock* superblock_entry, struct inode* pare
 
 void read_zone(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start);
 
-uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index);
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start);
 
-void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node);
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start);
