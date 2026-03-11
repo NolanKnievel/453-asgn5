@@ -1,6 +1,14 @@
 #ifndef MINLS_H
 #define MINLS_H
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "printers.h"
+#include "reads.h"
+#include "searches.h"
+
 #define USAGE_MESSAGE "usage: minls [ -v ] [ -p part [ -s subpart ] ] imagefile [ path ]\n \
         Options: \n \
         -p part    --- select partition for filesystem (default: none)\n \
