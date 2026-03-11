@@ -119,10 +119,9 @@ int strtok_count(char* path){
 
 
 // helper to read a zone
-void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config)
-{
+void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config) {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
-    
+
     if(config->verbose) {
         printf("Reading zone %d\n", zone);
     }
@@ -142,8 +141,7 @@ void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_
 // converts a file zone index to actual zone number
 // 0 through DIRECT_ZONES + INDIRECT + DOUBLE_INDIRECT
 // actual: the actual zone number
-uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config)
-{
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config) {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
     uint32_t per_block = zone_size / sizeof(uint32_t);
 
@@ -199,8 +197,7 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
 }
 
 // writes the contents of a file to a destination
-void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config)
-{
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config) {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
     uint32_t remaining = node->size;
 

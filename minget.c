@@ -1,4 +1,4 @@
-#include "minls.h"
+#include "minget.h"
 
 
 int main(int argc, char *argv[]) {
@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     }
     /* -----FIND PARTITIONS-----*/
     // get array of partition entry structs
-    
+
     struct partition_table_entry partition_entries[NUM_PARTITIONS];
     int partition_addr = 0;
     int ret1 = 0;
@@ -120,21 +120,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     /*----- PRINT CONTENTS -----*/
-    //find whether last file is directory or regular file
-    if(dir_check(final_inode)){
-        ret = print_macros_dir(fd, superblock_entry.firstdata, final_inode, zonesize, inode_start, data_start);
-        if(ret == -1){
-            fprintf(stderr, "print_macros_dir\n");
-            return 1;
-        }
-    }
-    else if(regFile_check(final_inode)){
-        ret = print_macros_file(final_dir, final_inode);
-        if(ret == -1){
-            fprintf(stderr, "print_macros_dir\n");
-        return 1;
-        }
-    }
+    copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
+
     
     // cleanup
     close(fd);
