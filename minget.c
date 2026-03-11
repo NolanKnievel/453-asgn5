@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
     /* ----- CALCULATE OFFSETS ----- */
     int zonesize = superblock_entry.blocksize << superblock_entry.log_zone_size;
     off_t data_start = partition_addr + (off_t)(superblock_entry.firstdata * zonesize);
+    data_start ++;
 
     /* -----PATH NOT GIVEN, PRINT ROOT CONTENTS-----*/
     //if path not given
@@ -100,7 +101,7 @@ int main(int argc, char *argv[]) {
             print_superblock(&superblock_entry);
             print_inode(root_inode);
         }
-        copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
+        copy_file(fd, stdout, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
         return 0;
     }
     /* ----- PATH GIVEN, SEARCH FOR FILE ------*/
