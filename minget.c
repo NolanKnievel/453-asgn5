@@ -120,6 +120,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     /*----- PRINT CONTENTS -----*/
+    if(config.verbose){
+        printf("Writing contents of %s to stdout\n", config.path);
+    }
     copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
 
     
