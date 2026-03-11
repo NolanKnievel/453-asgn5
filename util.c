@@ -197,6 +197,7 @@ int read_inode(int fd, struct inode *inode, off_t start, int inode_num, Config *
     }
     return 0;
 
+}
 
 int dir_check(struct inode* inode){
     if((inode->mode & DIRECTORY_MASK) == 0){
