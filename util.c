@@ -119,7 +119,7 @@ int strtok_count(char* path){
 
 
 // helper to read a zone
-void read_zone(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start)
+void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start)
 {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
 
@@ -157,7 +157,7 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
         if (node->indirect == 0)
             return 0;
 
-        read_zone(fd, sb, node->indirect, buf, fs_start);
+        read_zone2(fd, sb, node->indirect, buf, fs_start);
 
         return buf[index];
     }
@@ -168,7 +168,7 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
     if (node->two_indirect == 0)
         return 0;
 
-    read_zone(fd, sb, node->two_indirect, buf, fs_start);
+    read_zone2(fd, sb, node->two_indirect, buf, fs_start);
 
     uint32_t first_index = index / per_block;
     uint32_t second_index = index % per_block;
@@ -178,7 +178,7 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
     if (indirect_zone == 0)
         return 0;
 
-    read_zone(fd, sb, indirect_zone, buf, fs_start);
+    read_zone2(fd, sb, indirect_zone, buf, fs_start);
 
     return buf[second_index];
 }
@@ -200,7 +200,7 @@ void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uin
         if (zone == 0) {
             memset(buffer, 0, zone_size);
         } else {
-            read_zone(fd, sb, zone, buffer, fs_start);
+            read_zone2(fd, sb, zone, buffer, fs_start);
         }
 
         uint32_t write_size = remaining < zone_size ? remaining : zone_size;
