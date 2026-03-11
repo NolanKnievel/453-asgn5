@@ -197,20 +197,6 @@ int read_inode(int fd, struct inode *inode, off_t start, int inode_num, Config *
     }
     return 0;
 
-// returns next zone number for the inode, 0 if no more zones
-// zone_index points to the current zone index for the inode zone array
-int get_next_zone(struct inode *inode, int *zone_index, uint32_t *zone_out);
-
-// reads one zone into a buffer
-int read_zone(int fd,
-              struct superblock *sb,
-              uint32_t zone,
-              void *buffer);
-
-
-while (get_next_zone()) {q
-    read_zone(...)
-}
 
 int dir_check(struct inode* inode){
     if((inode->mode & DIRECTORY_MASK) == 0){
