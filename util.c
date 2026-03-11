@@ -309,21 +309,21 @@ int print_permissions(struct inode* inode_entry){
     return 1;
 }
 
-struct inode* inum_2_inode(int fd, off_t inode_base, int cur_offset){
-    //TODO: OFFSET IS WRONG, WE NEED TO GO BACKWARDS FROM DATA ZONES TO INODE BASE
-    struct inode* ret = malloc(sizeof(struct inode));
-    ssize_t temp = 0;
-    //need to go backwards from data done, to base inode, plus inode offset
-    if(lseek(fd , offset, SEEK_SET) == -1){//go backwards to inode base
-        fprintf(stderr, "lseek for inum_2_inode failed\n");
-        return NULL;
-    }
-    if((temp = read(fd, ret, sizeof(struct inode))) == -1){
-        fprintf(stderr, "error reading inode, inum_2_inode\n");
-        return NULL;
-    }
-    return ret;
-}
+// struct inode* inum_2_inode(int fd, off_t inode_base, int cur_offset){
+//     //TODO: OFFSET IS WRONG, WE NEED TO GO BACKWARDS FROM DATA ZONES TO INODE BASE
+//     struct inode* ret = malloc(sizeof(struct inode));
+//     ssize_t temp = 0;
+//     //need to go backwards from data done, to base inode, plus inode offset
+//     if(lseek(fd , offset, SEEK_SET) == -1){//go backwards to inode base
+//         fprintf(stderr, "lseek for inum_2_inode failed\n");
+//         return NULL;
+//     }
+//     if((temp = read(fd, ret, sizeof(struct inode))) == -1){
+//         fprintf(stderr, "error reading inode, inum_2_inode\n");
+//         return NULL;
+//     }
+//     return ret;
+// }
 
 int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, off_t inode_base, int inum){
     int inode_read = 0;
