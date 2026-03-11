@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
             print_superblock(&superblock_entry);
             print_inode(root_inode);
         }
+        printf("copying: \n");
         copy_file(fd, stdout, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
         return 0;
     }
@@ -109,6 +110,7 @@ int main(int argc, char *argv[]) {
     struct directory* final_dir = NULL;
     struct inode* final_inode = NULL;
     //want wrapper
+    printf("copying: \n");
     int ret = search_all(fd, &config, superblock_entry.blocksize, root_inode, inode_start, zonesize, final_dir, final_inode);
     //file not found
     if(ret == 0){
