@@ -1,6 +1,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "util.h"
 #include "stdio.h"
 #include "stdlib.h"

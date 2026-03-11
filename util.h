@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
+#include <stdio.h>
 
 #define DIRECTORY_MASK 0040000
 #define OWNER_R 0000400
