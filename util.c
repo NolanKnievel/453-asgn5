@@ -325,7 +325,7 @@ struct inode* inum_2_inode(int fd, int cur_offset){
     return ret;
 }
 
-int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, off_t inode_base, int inum){
+int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, int inum){
     int inode_read = 0;
     struct directory dir;
     struct inode cur_inode;

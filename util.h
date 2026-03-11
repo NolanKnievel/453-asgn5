@@ -129,7 +129,7 @@ uint32_t traverse_path(int fd,
         
 int print_permissions(struct inode* inode_entry);
 
-int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, off_t inode_base, int inum);
+int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, int inum);
 
 void read_zone(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start);
 
