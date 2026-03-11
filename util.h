@@ -117,3 +117,7 @@ int regFile_check(struct inode* inode);
 int calc_datazone_addr(int data_start, uint16_t firstdata, int zonesize, int zone_idx);
 
 int strtok_count(char* path);
+
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start);
+
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start);

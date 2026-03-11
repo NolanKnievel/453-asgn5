@@ -117,3 +117,99 @@ int strtok_count(char* path){
     return count;
 }
 
+
+// helper to read a zone
+void read_zone(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start)
+{
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
+
+    if (zone == 0) {
+        memset(buf, 0, zone_size);
+        return;
+    }
+
+    uint32_t offset = fs_start + (zone * sb->blocksize << sb->log_zone_size);
+
+    lseek(fd, offset, SEEK_SET);
+    read(fd, buf, zone_size);
+}
+
+
+// converts a file zone index to actual zone number
+// 0 through DIRECT_ZONES + INDIRECT + DOUBLE_INDIRECT
+// actual: the actual zone number
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start)
+{
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
+    uint32_t per_block = zone_size / sizeof(uint32_t);
+
+    uint32_t buf[per_block];
+
+    // Direct
+    if (index < DIRECT_ZONES)
+        return node->zone[index];
+
+    index -= DIRECT_ZONES;
+
+    // Indirect
+    if (index < per_block) {
+
+        if (node->indirect == 0)
+            return 0;
+
+        read_zone(fd, sb, node->indirect, buf, fs_start);
+
+        return buf[index];
+    }
+
+    index -= per_block;
+
+    // Double indirect
+    if (node->two_indirect == 0)
+        return 0;
+
+    read_zone(fd, sb, node->two_indirect, buf, fs_start);
+
+    uint32_t first_index = index / per_block;
+    uint32_t second_index = index % per_block;
+
+    uint32_t indirect_zone = buf[first_index];
+
+    if (indirect_zone == 0)
+        return 0;
+
+    read_zone(fd, sb, indirect_zone, buf, fs_start);
+
+    return buf[second_index];
+}
+
+// writes the contents of a file to a destination
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start)
+{
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
+    uint32_t remaining = node->size;
+
+    char *buffer = malloc(zone_size);
+
+    uint32_t zone_index = 0;
+
+    while (remaining > 0) {
+
+        uint32_t zone = get_file_zone(fd, sb, node, zone_index, fs_start);
+
+        if (zone == 0) {
+            memset(buffer, 0, zone_size);
+        } else {
+            read_zone(fd, sb, zone, buffer, fs_start);
+        }
+
+        uint32_t write_size = remaining < zone_size ? remaining : zone_size;
+
+        fwrite(buffer, write_size, 1, dst);
+
+        remaining -= write_size;
+        zone_index++;
+    }
+
+    free(buffer);
+}
