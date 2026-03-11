@@ -401,7 +401,7 @@ int print_macros(int fd, struct superblock* superblock_entry, struct inode* pare
 }
 
 // helper to read a zone
-void read_zone(int fd, superblock *sb, uint32_t zone, void *buf, uint32_t fs_start)
+void read_zone(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start)
 {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
 
@@ -420,7 +420,7 @@ void read_zone(int fd, superblock *sb, uint32_t zone, void *buf, uint32_t fs_sta
 // converts a file zone index to actual zone number
 // 0 through DIRECT_ZONES + INDIRECT + DOUBLE_INDIRECT
 // actual: the actual zone number
-uint32_t get_file_zone(int fd, superblock *sb, inode *node, uint32_t index)
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index)
 {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
     uint32_t per_block = zone_size / sizeof(uint32_t);
@@ -466,7 +466,7 @@ uint32_t get_file_zone(int fd, superblock *sb, inode *node, uint32_t index)
 }
 
 // writes the contents of a file to a destination
-void copy_file(int fd, FILE *dst, superblock *sb, inode *node)
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node)
 {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
     uint32_t remaining = node->size;
