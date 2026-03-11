@@ -119,7 +119,7 @@ int strtok_count(char* path){
 
 
 // helper to read a zone
-void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start)
+void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config)
 {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
 
@@ -138,7 +138,7 @@ void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_
 // converts a file zone index to actual zone number
 // 0 through DIRECT_ZONES + INDIRECT + DOUBLE_INDIRECT
 // actual: the actual zone number
-uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start)
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config)
 {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
     uint32_t per_block = zone_size / sizeof(uint32_t);
@@ -147,6 +147,10 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
 
     // Direct
     if (index < DIRECT_ZONES)
+        if (config->verbose) {
+            printf("Reading direct zone %d\n", index);
+        }
+
         return node->zone[index];
 
     index -= DIRECT_ZONES;
@@ -157,7 +161,11 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
         if (node->indirect == 0)
             return 0;
 
-        read_zone2(fd, sb, node->indirect, buf, fs_start);
+        if (config->verbose) {
+            printf("Reading indirect zone %d\n", index);
+        }
+
+        read_zone2(fd, sb, node->indirect, buf, fs_start, config);
 
         return buf[index];
     }
@@ -168,7 +176,10 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
     if (node->two_indirect == 0)
         return 0;
 
-    read_zone2(fd, sb, node->two_indirect, buf, fs_start);
+    if (config->verbose)
+        printf("Reading two indirect zone %d\n", index);
+
+    read_zone2(fd, sb, node->two_indirect, buf, fs_start, config);
 
     uint32_t first_index = index / per_block;
     uint32_t second_index = index % per_block;
@@ -178,13 +189,13 @@ uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32
     if (indirect_zone == 0)
         return 0;
 
-    read_zone2(fd, sb, indirect_zone, buf, fs_start);
+    read_zone2(fd, sb, indirect_zone, buf, fs_start, config);
 
     return buf[second_index];
 }
 
 // writes the contents of a file to a destination
-void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start)
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config)
 {
     uint32_t zone_size = sb->blocksize << sb->log_zone_size;
     uint32_t remaining = node->size;
@@ -195,12 +206,12 @@ void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uin
 
     while (remaining > 0) {
 
-        uint32_t zone = get_file_zone(fd, sb, node, zone_index, fs_start);
+        uint32_t zone = get_file_zone(fd, sb, node, zone_index, fs_start, config);
 
         if (zone == 0) {
             memset(buffer, 0, zone_size);
         } else {
-            read_zone2(fd, sb, zone, buffer, fs_start);
+            read_zone2(fd, sb, zone, buffer, fs_start, config);
         }
 
         uint32_t write_size = remaining < zone_size ? remaining : zone_size;

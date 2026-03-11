@@ -118,8 +118,8 @@ int calc_datazone_addr(int data_start, uint16_t firstdata, int zonesize, int zon
 
 int strtok_count(char* path);
 
-void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start);
+void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config);
 
-uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start);
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config);
 
-void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start);
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config);
