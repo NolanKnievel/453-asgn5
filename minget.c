@@ -104,9 +104,9 @@ int main(int argc, char *argv[]) {
             print_inode(root_inode);
         }
         printf("copying: \n");
-        FILE *f = fopen(config.copy_path, "w");
+        FILE *f = config.copy_path ? fopen(config.copy_path, "w") : stdout;
         copy_file(fd, f, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
-        fclose(f);
+        config.copy_path ? fclose(f) : 0;
         return 0;
     }
     /* ----- PATH GIVEN, SEARCH FOR FILE ------*/
@@ -132,9 +132,9 @@ int main(int argc, char *argv[]) {
     }
 
     if(regFile_check(final_inode)){    // check if regular file
-        FILE *f = fopen(config.copy_path, "w");
+        FILE *f = config.copy_path ? fopen(config.copy_path, "w") : stdout;
         copy_file(fd, f, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
-        fclose(f);
+        config.copy_path ? fclose(f) : 0;
     }
     else if(dir_check(final_inode)){     // file is directory
         fprintf(stderr, "File is a directory, cannot minget\n");
