@@ -111,6 +111,9 @@ struct __attribute__((packed)) directory {
 
 int parse_ls_args(int argc, char *argv[], Config *config);
 
+int parse_get_args(int argc, char *argv[], Config *config);
+
+
 int dir_check(struct inode* inode);
 
 int regFile_check(struct inode* inode);
