@@ -104,7 +104,9 @@ int main(int argc, char *argv[]) {
             print_inode(root_inode);
         }
         printf("copying: \n");
-        copy_file(fd, stdout, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
+        FILE *f = fopen(config.copy_path, "w");
+        copy_file(fd, f, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
+        fclose(f);
         return 0;
     }
     /* ----- PATH GIVEN, SEARCH FOR FILE ------*/
@@ -124,13 +126,15 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "search_all: Error!\n");
         return 1;
     }
-    /*----- PRINT CONTENTS -----*/
+    /*----- COPY CONTENTS -----*/
     if(config.verbose){
         printf("Writing contents of %s to stdout\n", config.path);
     }
 
     if(regFile_check(final_inode)){    // check if regular file
-        copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
+        FILE *f = fopen(config.copy_path, "w");
+        copy_file(fd, f, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
+        fclose(f);
     }
     else if(dir_check(final_inode)){     // file is directory
         fprintf(stderr, "File is a directory, cannot minget\n");
