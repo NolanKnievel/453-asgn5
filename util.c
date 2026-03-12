@@ -84,6 +84,97 @@ int parse_ls_args(int argc, char *argv[], Config *config) {
     return 0;
 }
 
+
+// parse args and update config struct to match
+int parse_get_args(int argc, char *argv[], Config *config) {
+    int i = 1;
+
+    // set defaults
+    config->verbose = 0;
+    config->part = -1;
+    config->subpart = -1;
+    config->imagefile = NULL;
+    config->path = NULL;
+    config->copy_path = NULL;
+
+    while(i < argc) {
+        // -v
+        if(strcmp(argv[i], "-v") == 0) {
+            config->verbose = 1;
+            i++;
+        }
+        // -p
+        else if(strcmp(argv[i], "-p") == 0) {
+            if (i+1 >= argc) {
+                fprintf(stderr, "-p requires a part number\n");
+                return -1;
+            }
+            config->part = atoi(argv[i+1]);
+            i += 2;
+
+            // -s
+            if(strcmp(argv[i], "-s") == 0) {
+                if (i+1 >= argc) {
+                    fprintf(stderr, "-v requires a subpart number\n");
+                    return -1;
+                }
+                config->subpart = atoi(argv[i+1]);
+                i += 2;
+            }
+        }
+
+        // imagefile
+        else if(config->imagefile == NULL) {
+            config->imagefile = argv[i];
+            i++;
+        }
+        // path
+        else if(config->path == NULL) {
+            config->path = argv[i];
+            i++;
+        }
+        // for minget: copy_path if arg exists
+        else if(config->copy_path == NULL) {
+            config->copy_path = argv[i];
+            i++;
+        }
+        else {
+            fprintf(stderr, "Unexpected arguments, please follow the pattern: \n minget [ -v ] [ -p part [ -s subpart ] ] imagefile srcpath [ dstpath ]\n");
+            return -1;
+        }
+    }
+
+    // validate args
+    if (config->imagefile == NULL) {
+        fprintf(stderr, "Missing required imagefile\n");
+        return -1;
+    }
+
+    if (config->subpart && !config->part) {
+        fprintf(stderr, "-s cannot be used without -p\n");
+        return -1;
+    }
+
+    if (config->path == NULL) {
+        fprintf(stderr, "Missing required path\n");
+        return -1;
+    }
+
+    // print config
+    if (config->verbose) {
+        printf("Config:\n");
+        printf("  Verbose: %d\n", config->verbose);
+        printf("  Part: %i\n", config->part != -1 ? config->part : -1);
+        printf("  Subpart: %i\n", config->subpart != -1 ? config->subpart : -1);
+        printf("  Imagefile: %s\n", config->imagefile ? config->imagefile : "NULL");
+        printf("  Path: %s\n", config->path ? config->path : "NULL");
+        printf("  Copy Path: %s\n", config->copy_path ? config->copy_path : "NULL");
+    }
+
+    return 0;
+}
+
+
 int dir_check(struct inode* inode){
     if((inode->mode & DIRECTORY_MASK) == 0){
         return 0;

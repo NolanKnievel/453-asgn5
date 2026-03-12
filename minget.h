@@ -9,7 +9,7 @@
 #include "reads.h"
 #include "searches.h"
 
-#define USAGE_MESSAGE "usage: minls [ -v ] [ -p part [ -s subpart ] ] imagefile [ path ]\n \
+#define USAGE_MESSAGE "usage: minget [ -v ] [ -p part [ -s subpart ] ] imagefile srcpath [ dstpath ]\n \
         Options: \n \
         -p part    --- select partition for filesystem (default: none)\n \
         -s sub     --- select subpartition for filesystem (default: none)\n \

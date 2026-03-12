@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
         printf(USAGE_MESSAGE);
         return 1;
     }
-    parse_ls_args(argc, argv, &config);
+    parse_get_args(argc, argv, &config);
 
     // open image file
     int fd = open(config.imagefile, O_RDONLY);
