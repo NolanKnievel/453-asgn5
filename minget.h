@@ -8,7 +8,6 @@
 #include "printers.h"
 #include "reads.h"
 #include "searches.h"
-#include "util.h"
 
 #define USAGE_MESSAGE "usage: minget [ -v ] [ -p part [ -s subpart ] ] imagefile srcpath [ dstpath ]\n \
         Options: \n \
