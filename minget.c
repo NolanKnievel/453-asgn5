@@ -128,8 +128,17 @@ int main(int argc, char *argv[]) {
     if(config.verbose){
         printf("Writing contents of %s to stdout\n", config.path);
     }
-    copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
 
+    if(regFile_check(final_inode)){    // check if regular file
+        copy_file(fd, stdout, &superblock_entry, final_inode, (uint32_t)partition_addr, &config);
+    }
+    else if(dir_check(final_inode)){     // file is directory
+        fprintf(stderr, "File is a directory, cannot minget\n");
+    }
+    else {
+        fprintf(stderr, "File is not regular file or directory, cannot minget\n");
+        return 1;
+    }
 
     // cleanup
     close(fd);

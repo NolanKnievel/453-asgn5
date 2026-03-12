@@ -174,14 +174,14 @@ int parse_get_args(int argc, char *argv[], Config *config) {
     return 0;
 }
 
-
+// return 1 if inode is directory, 0 otherwise
 int dir_check(struct inode* inode){
     if((inode->mode & DIRECTORY_MASK) == 0){
         return 0;
     }
     return 1;
 }
-
+// return 1 if inode is file, 0 otherwise
 int regFile_check(struct inode* inode){
     printf("AND operation: %u\n", (inode->mode & REGULAR_FILE_MASK));
     if((inode->mode & REGULAR_FILE_MASK) == 0){
