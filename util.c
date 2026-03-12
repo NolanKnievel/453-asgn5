@@ -9,7 +9,7 @@
 
 // parse args and update config struct to match
 // ~pn-cs453/Given/Asgn5/Images
-int parse_args(int argc, char *argv[], Config *config) {
+int parse_ls_args(int argc, char *argv[], Config *config) {
     int i = 1;
 
     // set defaults

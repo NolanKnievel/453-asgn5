@@ -108,7 +108,7 @@ struct __attribute__((packed)) directory {
     unsigned char name[MAX_DIR_NAME_SIZE_BYTES];
 };
 
-int parse_args(int argc, char *argv[], Config *config);
+int parse_ls_args(int argc, char *argv[], Config *config);
 
 int dir_check(struct inode* inode);
 
