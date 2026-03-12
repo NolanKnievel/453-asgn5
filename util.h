@@ -54,6 +54,7 @@ typedef struct {
     int subpart; // defaults to -1 if not provided - no subpartition
     char *imagefile; // required
     char *path; // defaults to '/' if not provided. '/' added to paths not including one
+    char *copy_path; // for minget -- path to copy to
 } Config;
 
 
