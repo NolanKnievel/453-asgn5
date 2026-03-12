@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
     }
     /*----- COPY CONTENTS -----*/
     if(config.verbose){
-        printf("Writing contents of %s to stdout\n", config.path);
+        printf("Writing contents of %s to %s\n", config.path, config.copy_path ? config.copy_path : "stdout");
     }
 
     if(regFile_check(final_inode)){    // check if regular file
