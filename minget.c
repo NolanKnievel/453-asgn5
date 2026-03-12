@@ -94,19 +94,10 @@ int main(int argc, char *argv[]) {
     off_t data_start = partition_addr + (off_t)(superblock_entry.firstdata * zonesize);
     data_start ++;
 
-    /* -----PATH NOT GIVEN, PRINT ROOT CONTENTS-----*/
+    /* -----PATH NOT GIVEN, ERROR-----*/
     //if path not given
     if(strcmp(config.path, "/") == 0){
-        // write root directory contents
-        if(config.verbose){
-            printf("no path provided, writing root directory contents to stdout\n");
-            print_superblock(&superblock_entry);
-            print_inode(root_inode);
-        }
-        printf("copying: \n");
-        FILE *f = config.copy_path ? fopen(config.copy_path, "w") : stdout;
-        copy_file(fd, f, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
-        config.copy_path ? fclose(f) : 0;
+        fprintf(stderr, "File is a directory, cannot minget\n");
         return 0;
     }
     /* ----- PATH GIVEN, SEARCH FOR FILE ------*/
