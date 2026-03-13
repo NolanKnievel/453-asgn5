@@ -91,8 +91,6 @@ int main(int argc, char *argv[]) {
     }
     /* ----- CALCULATE OFFSETS ----- */
     int zonesize = superblock_entry.blocksize << superblock_entry.log_zone_size;
-    off_t data_start = partition_addr + (off_t)(superblock_entry.firstdata * zonesize);
-    // data_start ++;
 
     /* -----PATH NOT GIVEN, ERROR-----*/
     //if path not given
