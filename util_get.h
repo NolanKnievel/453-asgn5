@@ -33,8 +33,6 @@
 
 #define DIRECT_ZONES 7
 
-// #define USAGE_MESSAGE 
-
 //still deciding whether we need this or not, same amount of lines
 #define SUPERBLOCK_CONTENTS "Superblock Contents:\n \
         Store Fields:\n\
@@ -111,23 +109,21 @@ struct __attribute__((packed)) directory {
     unsigned char name[MAX_DIR_NAME_SIZE_BYTES];
 };
 
-int parse_ls_args(int argc, char *argv[], Config *config);
+int parse_ls_args_get(int argc, char *argv[], Config *config);
 
-int parse_get_args(int argc, char *argv[], Config *config);
+int parse_get_args_get(int argc, char *argv[], Config *config);
 
 
-int dir_check(struct inode* inode);
+int dir_check_get(struct inode* inode);
 
-int regFile_check(struct inode* inode);
+int regFile_check_get(struct inode* inode);
 
-int calc_datazone_addr(int data_start, 
-    uint16_t firstdata, int zonesize, int zone_idx);
+int calc_datazone_addr_get(int data_start, uint16_t firstdata, int zonesize, int zone_idx);
 
-int strtok_count(char* path);
+int strtok_count_get(char* path);
 
-void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config);
+void read_zone2_get(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config);
 
-uint32_t get_file_zone_get(int fd, struct superblock *sb, struct inode *node, 
-    uint32_t index, uint32_t fs_start, Config *config);
-    
-void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config);
+uint32_t get_file_zone_get(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config);
+
+void copy_file_get(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config);
