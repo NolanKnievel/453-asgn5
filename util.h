@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <stdio.h>
 
 #define DIRECTORY_MASK 0040000
 #define OWNER_R 0000400
@@ -123,16 +122,8 @@ int calc_datazone_addr(int data_start, uint16_t firstdata, int zonesize, int zon
 
 int strtok_count(char* path);
 
-struct inode* inum_2_inode(int fd, int inum);
 void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config);
 
 uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config);
 
-int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, int inum);
-
-void read_zone(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start);
-
-uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start);
-
-void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start);
 void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config);
