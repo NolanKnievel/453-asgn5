@@ -56,7 +56,10 @@ int parse_args(int argc, char *argv[], Config *config) {
             i++;
         }
         else {
-            fprintf(stderr, "Unexpected arguments, please follow the pattern: \n minls [ -v ] [ -p part [ -s subpart ] ] imagefile [ path ]\n");
+            fprintf(stderr, "Unexpected arguments");
+            fprintf(stderr, "please follow the pattern: \n minls [ -v ] ");
+            fprintf(stderr, "[ -p part [ -s subpart ] ] \
+                imagefile [ path ]\n");
             return -1;
         }
     }
@@ -67,20 +70,11 @@ int parse_args(int argc, char *argv[], Config *config) {
         return -1;
     }
 
-    if (config->subpart && !config->part) {
+    if ((config->subpart != -1) && (config->part == -1)) {
         fprintf(stderr, "-s cannot be used without -p\n");
         return -1;
     }
 
-    // not needed for verbose (debugging)
-    // if(config->verbose) {
-    //     printf("Config:\n");
-    //     printf("  Verbose: %d\n", config->verbose);
-    //     printf("  Part: %i\n", config->part != -1 ? config->part : -1);
-    //     printf("  Subpart: %i\n", config->subpart != -1 ? config->subpart : -1);
-    //     printf("  Imagefile: %s\n", config->imagefile ? config->imagefile : "NULL");
-    //     printf("  Path: %s\n", config->path ? config->path : "NULL");
-    // }
     return 0;
 }
 
@@ -92,7 +86,6 @@ int dir_check(struct inode* inode){
 }
 
 int regFile_check(struct inode* inode){
-    printf("AND operation: %u\n", (inode->mode & REGULAR_FILE_MASK));
     if((inode->mode & REGULAR_FILE_MASK) == 0){
         return 0;
     }
@@ -100,16 +93,20 @@ int regFile_check(struct inode* inode){
 }
 
 //calculates datazone offset using zone index and zonesize
-int calc_datazone_addr(int data_start, uint16_t firstdata, int zonesize, int zone_idx){
+int calc_datazone_addr(int data_start, 
+    uint16_t firstdata, int zonesize, int zone_idx){
     return data_start + (off_t)(zone_idx - firstdata) * zonesize;
 }
 
 //copies path and counts length
 int strtok_count(char* path){
     char copy [strlen((const char*)path)];
+
     memcpy((void*)copy, (const void*)path, strlen((const char*)path));
-    char* ret = strtok(path, "/");
+
+    char* ret = strtok(copy, "/");
     int count = 0;
+
     while((ret != NULL)){
         count++;
         ret = strtok(NULL, "/");

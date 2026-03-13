@@ -3,9 +3,38 @@
 /* ----- READER FUNCTIONS ----- */
 // read partition table into an array of partition_table_entry, 
 // return -1 if the partition table is invalid
-// start marks the start of the disk(or partition if we're reading subpartition entries)
-int read_partition_table(int fd, struct partition_table_entry *entries, off_t start, Config *config) {
-    //do we need to consider that a 'byte' can be different on different systems?
+// start marks the start of the disk(or partition 
+//    if we're reading subpartition entries)
+
+// helper to read a zone
+int read_zone(int fd, struct superblock *sb, uint32_t zone, 
+    void *buf, uint32_t fs_start)
+{
+    //printf("READ ZONE\n");
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
+    int ret = 0;
+    // if (zone == 0) {
+    //     memset(buf, 0, zone_size);
+    //     return 1;
+    // }
+
+    uint32_t offset =
+     fs_start + (zone * (sb->blocksize << sb->log_zone_size));
+
+    lseek(fd, offset, SEEK_SET);
+    if((ret = read(fd, buf, zone_size) == -1)){
+        printf("read_zone: read error\n");
+        return -1;
+    }
+    // if((uint32_t)ret != zone_size){
+    //     printf("read_zone: bytes read != zone_size\n");
+    //     return -1;
+    // }
+    return 1;
+}
+
+int read_partition_table(int fd, 
+    struct partition_table_entry *entries, off_t start, Config *config) {
     //can only read the signature of ~/HardDisk image on CSL
     uint8_t mbr[MBR_SIZE];
 
@@ -63,38 +92,28 @@ int read_superblock(int fd, struct superblock* superblock_entry, int start){
 // read inode into struct
 // inodes table starting at start
 //  return -1 on error
-int read_inode(int fd, struct inode *inode, off_t inode_start, int inode_num) {
+int read_inode(int fd, struct inode *inode, off_t inode_start, int inode_num){
     //seek
-    if (lseek(fd, inode_start + (inode_num - 1) * sizeof(struct inode), SEEK_SET) == -1) {
+    if (lseek(fd, inode_start + (inode_num - 1) 
+        * sizeof(struct inode), SEEK_SET) == -1) {
         fprintf(stderr, "lseek\n");
         return -1;
     }
     //reading inode struct
-    size_t bytes = read(fd, inode, sizeof(struct inode));
-
+    ssize_t bytes = read(fd, inode, sizeof(struct inode));
+    if(bytes == -1){
+        perror("read_inode: read call");
+        return -1;
+    }
+    if(bytes == 0){
+        printf("read_inode: zero bytes read of inode struct\n");
+        return -1;
+    }
     //error check
-    if (bytes != sizeof(struct inode)) {
+    if ((unsigned long)bytes != sizeof(struct inode)) {
         fprintf(stderr, "inode read error\n");
         perror("read error in read_inode");
         return -1;
     }
     return 0;
-}
-
-//read zone into pointer
-//TODO: use for indirect and double-indirect searches?
-int read_zone(int fd, int zone_addr, int zonesize, void* zone){
-    //locals
-    int ret = 0;
-    //seek
-    if(lseek(fd, (off_t)zone_addr, SEEK_SET) == -1){
-        fprintf(stderr, "read_zone lseek error\n");
-        return -1;
-    }
-    //read
-    if((ret = read(fd, zone, zonesize)) == -1){
-        fprintf(stderr, "read zone error\n");
-        return -1;
-    }
-    return 1;
 }
