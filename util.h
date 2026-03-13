@@ -1,5 +1,8 @@
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <stdio.h>
 
@@ -31,6 +34,8 @@
 
 #define DIRECT_ZONES 7
 
+// #define USAGE_MESSAGE 
+
 //still deciding whether we need this or not, same amount of lines
 #define SUPERBLOCK_CONTENTS "Superblock Contents:\n \
         Store Fields:\n\
@@ -52,6 +57,7 @@ typedef struct {
     int subpart; // defaults to -1 if not provided - no subpartition
     char *imagefile; // required
     char *path; // defaults to '/' if not provided. '/' added to paths not including one
+    char *copy_path; // for minget -- path to copy to
 } Config;
 
 
@@ -106,28 +112,24 @@ struct __attribute__((packed)) directory {
     unsigned char name[MAX_DIR_NAME_SIZE_BYTES];
 };
 
+int parse_ls_args(int argc, char *argv[], Config *config);
+
+int parse_get_args(int argc, char *argv[], Config *config);
 
 
-int parse_args(int argc, char *argv[], Config *config);
+int dir_check(struct inode* inode);
 
-int read_partition_table(int fd, struct partition_table_entry *entries, off_t start, Config *config);
+int regFile_check(struct inode* inode);
 
-int read_superblock(int fd, struct superblock* superblock_entry, int start, Config* config);
+int calc_datazone_addr(int data_start, 
+    uint16_t firstdata, int zonesize, int zone_idx);
 
-int read_inode(int fd, struct inode *inodes, off_t start, int ninodes, Config *config);
-
-int dir_check(struct inode*  inode);
-
-int calc_datazone_addr(struct superblock* superblock_entry, int inum);
+int strtok_count(char* path);
 
 struct inode* inum_2_inode(int fd, int inum);
+void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config);
 
-uint32_t traverse_path(int fd, 
-        struct superblock* superblock_entry,
-        int inode_data_start,
-        unsigned char* target);
-        
-int print_permissions(struct inode* inode_entry);
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config);
 
 int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, int inum);
 
@@ -136,3 +138,4 @@ void read_zone(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t
 uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start);
 
 void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start);
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config);

@@ -6,11 +6,11 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-
+/* ----- UTILITIES ------*/
 
 // parse args and update config struct to match
 // ~pn-cs453/Given/Asgn5/Images
-int parse_args(int argc, char *argv[], Config *config) {
+int parse_ls_args(int argc, char *argv[], Config *config) {
     int i = 1;
 
     // set defaults
@@ -18,7 +18,7 @@ int parse_args(int argc, char *argv[], Config *config) {
     config->part = -1;
     config->subpart = -1;
     config->imagefile = NULL;
-    config->path = " ";
+    config->path = "/";
 
     while(i < argc) {
         // -v
@@ -57,7 +57,84 @@ int parse_args(int argc, char *argv[], Config *config) {
             i++;
         }
         else {
-            fprintf(stderr, "Unexpected arguments, please follow the pattern: \n minls [ -v ] [ -p part [ -s subpart ] ] imagefile [ path ]\n");
+            fprintf(stderr, "Unexpected arguments");
+            fprintf(stderr, "please follow the pattern: \n minls [ -v ] ");
+            fprintf(stderr, "[ -p part [ -s subpart ] ] \
+                imagefile [ path ]\n");
+            return -1;
+        }
+    }
+
+    // validate args
+    if (config->imagefile == NULL) {
+        fprintf(stderr, "Missing required imagefile\n");
+        return -1;
+    }
+
+    if ((config->subpart != -1) && (config->part == -1)) {
+        fprintf(stderr, "-s cannot be used without -p\n");
+        return -1;
+    }
+
+    return 0;
+}
+
+
+// parse args and update config struct to match
+int parse_get_args(int argc, char *argv[], Config *config) {
+    int i = 1;
+
+    // set defaults
+    config->verbose = 0;
+    config->part = -1;
+    config->subpart = -1;
+    config->imagefile = NULL;
+    config->path = NULL;
+    config->copy_path = NULL;
+
+    while(i < argc) {
+        // -v
+        if(strcmp(argv[i], "-v") == 0) {
+            config->verbose = 1;
+            i++;
+        }
+        // -p
+        else if(strcmp(argv[i], "-p") == 0) {
+            if (i+1 >= argc) {
+                fprintf(stderr, "-p requires a part number\n");
+                return -1;
+            }
+            config->part = atoi(argv[i+1]);
+            i += 2;
+
+            // -s
+            if(strcmp(argv[i], "-s") == 0) {
+                if (i+1 >= argc) {
+                    fprintf(stderr, "-v requires a subpart number\n");
+                    return -1;
+                }
+                config->subpart = atoi(argv[i+1]);
+                i += 2;
+            }
+        }
+
+        // imagefile
+        else if(config->imagefile == NULL) {
+            config->imagefile = argv[i];
+            i++;
+        }
+        // path
+        else if(config->path == NULL) {
+            config->path = argv[i];
+            i++;
+        }
+        // for minget: copy_path if arg exists
+        else if(config->copy_path == NULL) {
+            config->copy_path = argv[i];
+            i++;
+        }
+        else {
+            fprintf(stderr, "Unexpected arguments, please follow the pattern: \n minget [ -v ] [ -p part [ -s subpart ] ] imagefile srcpath [ dstpath ]\n");
             return -1;
         }
     }
@@ -73,256 +150,81 @@ int parse_args(int argc, char *argv[], Config *config) {
         return -1;
     }
 
-    // verbose - print parsed config
-    if(config->verbose) {
+    if (config->path == NULL) {
+        fprintf(stderr, "Missing required path\n");
+        return -1;
+    }
+
+    // print config
+    if (config->verbose) {
         printf("Config:\n");
         printf("  Verbose: %d\n", config->verbose);
         printf("  Part: %i\n", config->part != -1 ? config->part : -1);
         printf("  Subpart: %i\n", config->subpart != -1 ? config->subpart : -1);
         printf("  Imagefile: %s\n", config->imagefile ? config->imagefile : "NULL");
         printf("  Path: %s\n", config->path ? config->path : "NULL");
-    }
-    return 0;
-}
-
-
-// read partition table into an array of partition_table_entry, return -1 if
-// the partition table is invalid
-// start marks the start of the disk(or partition if we're reading subpartition entries)
-int read_partition_table(int fd, struct partition_table_entry *entries, off_t start, Config *config) {
-    //do we need to consider that a 'byte' can be different on different systems?
-    //can only read the signature of ~/HardDisk image on CSL
-    uint8_t mbr[MBR_SIZE];
-
-    // read MBR
-    if (lseek(fd, start, SEEK_SET) == -1) {
-        perror("lseek");
-        return -1;
-    }
-    printf("reading at: %zu %i bytes\n", start, MBR_SIZE);
-    if (read(fd, mbr, MBR_SIZE) != MBR_SIZE) {
-        perror("read");
-        return -1;
-    }
-    // debug prints
-    if (config->verbose) {
-        printf("sig: %02x %02x\n", mbr[510], mbr[511]);
-        printf("\n");
-    }
-    // validate boot signature
-    //printf("validating signature...\n");
-    if ((mbr[510] != 0x55) || (mbr[511] != 0xAA)) {
-        // no partitions
-        return -1;
-    }
-    // copy partition entries
-    //printf("copying to pointer...\n");
-    memcpy(entries, mbr + PARTITION_TABLE_OFFSET,
-           NUM_PARTITIONS * sizeof(struct partition_table_entry));
-    
-    return 0;
-}
-
-int read_superblock(int fd, struct superblock* superblock_entry, int start, Config* config){
-    off_t sb_offset = (off_t)(start + SUPERBLOCK_OFFSET);
-
-    //using lseek + read
-    if(lseek(fd, sb_offset, SEEK_SET) == -1){
-        fprintf(stderr, "superblock lseek\n");
-        return -1;
-    }
-    if(read(fd, superblock_entry, SUPERBLOCK_SIZE_BYTES) == -1){
-        fprintf(stderr, "superblock read");
-        return -1;
-    }
-    
-    //debug prints
-    printf("superblock magic num: %02x\n", superblock_entry->magic);
-    if(superblock_entry->magic != MAGIC_NUM) {
-        fprintf(stderr, "magic num\n");
-        return -1;
+        printf("  Copy Path: %s\n", config->copy_path ? config->copy_path : "NULL");
     }
 
-    if(config->verbose){
-        printf("Superblock Contents:\n");
-        printf("Store Fields:\n");
-        printf("ninodes           %u\n",  superblock_entry->ninodes);
-        printf("i_blocks          %u\n", superblock_entry->i_blocks);
-        printf("z_blocks          %d\n", superblock_entry->z_blocks);
-        printf("firstdata         %u\n", superblock_entry->firstdata);
-        printf("log_zone_size     %d\n", superblock_entry->log_zone_size);
-        printf("max_file          %u\n", superblock_entry->max_file);
-        printf("zones             %u\n", superblock_entry->zones);
-        printf("magic             %04x\n", superblock_entry->magic);
-        printf("blocksize         %u\n", superblock_entry->blocksize);
-        printf("subversion        %u\n\n", superblock_entry->subversion);
-    }
-    
-
-    return 1;
-}
-
-// read inode into struct
-// inodes table starting at start
-//  return -1 on error
-int read_inode(int fd, struct inode *inode, off_t start, int inode_num, Config *config) {
-    int i;
-    // seek and read
-    if (lseek(fd, start + (inode_num - 1) * sizeof(struct inode), SEEK_SET) == -1) {
-        fprintf(stderr, "lseek\n");
-        return -1;
-    }
-
-    ssize_t bytes = read(fd, inode, sizeof(struct inode));
-    if (bytes != sizeof(struct inode)) {
-        perror("read");
-        return -1;
-    }
-
-    // verbose - print inode info
-    if(config->verbose) {
-        printf("read inode %i\n", inode_num);
-        printf("  links: %u\n", inode->links);
-        printf("  atime: %u\n", inode->atime);
-        printf("  ctime: %u\n", inode->ctime);
-        printf("  mtime: %u\n", inode->mtime);
-        printf("  size: %u\n", inode->size);
-        printf("  mode: %u\n", inode->mode);
-        printf("  uid: %u\n", inode->uid);
-        printf("  gid: %u\n", inode->gid);
-
-        for (i = 0; i < DIRECT_ZONES; i++) {
-            printf("  zone[%d]: %u\n", i, inode->zone[i]);
-        }   
-    }
     return 0;
 
 }
 
+// return 1 if inode is directory, 0 otherwise
 int dir_check(struct inode* inode){
     if((inode->mode & DIRECTORY_MASK) == 0){
         return 0;
     }
     return 1;
 }
-
+// return 1 if inode is file, 0 otherwise
 int regFile_check(struct inode* inode){
-    printf("AND operation: %u\n", (inode->mode & REGULAR_FILE_MASK));
     if((inode->mode & REGULAR_FILE_MASK) == 0){
         return 0;
     }
     return 1;
 }
 
-int calc_datazone_addr(struct superblock* superblock_entry, int inum){
-    int zone_size = superblock_entry->blocksize << superblock_entry->log_zone_size;
-    int inode_data_start = zone_size * superblock_entry->firstdata
-                            + ((inum - 1) * DIRECT_ZONES); //gets us to first data zone
-    return inode_data_start;
+//calculates datazone offset using zone index and zonesize
+int calc_datazone_addr(int data_start, 
+    uint16_t firstdata, int zonesize, int zone_idx){
+    return data_start + (off_t)(zone_idx - firstdata) * zonesize;
 }
 
-//confirm given file exists
-uint32_t traverse_path(int fd, 
-        struct superblock* superblock_entry,
-        int inode_data_start,
-        unsigned char* target)
-        {
-    //locals
-    int bytes_read = 0;
-    struct directory dir;
+//copies path and counts length
+int strtok_count(char* path){
+    char copy [strlen((const char*)path)];
 
-    //offset to inode's data
-    if(lseek(fd, inode_data_start, SEEK_SET) == -1){
-        fprintf(stderr, "lseek error\n");
-        return 0;
-    }
-    //read entire data zone
-    int zone_size = superblock_entry->blocksize << superblock_entry->log_zone_size;
-    while((bytes_read += read(fd, &dir, sizeof(struct directory))) <= (zone_size * DIRECT_ZONES)){
-        //traversing path
-        if(strcmp((const char*)dir.name, (const char*)target) == 0){
-            //file found
-            //resetting fd back to superblock
-            if(lseek(fd, -1 * (bytes_read + inode_data_start), SEEK_SET) == -1){
-                fprintf(stderr, "lseek error\n");
-                return 0;
-            }
-            //return inode number
-            return dir.inode;
-        }
-    }
-    if(bytes_read == -1){
-        fprintf(stderr, "Error reading directory\n");
-        return 0;
-    }
-    //resetting fd back to superblock
-    if(lseek(fd, -1 * (bytes_read + inode_data_start), SEEK_SET) == -1){
-        fprintf(stderr, "lseek error\n");
-        return 0;
-    }
-    
-    //print directory (debugging)
-    // if(config->verbose){
-    //     printf("Directory Entry:\n");
-    //     printf("    inode:%u\n", dir.inode);
-    //     printf("    name:%s\n", dir.name);
-    // }
+    memcpy((void*)copy, (const void*)path, strlen((const char*)path));
 
-    //file not found
-    return 0;
+    char* ret = strtok(copy, "/");
+    int count = 0;
+
+    while((ret != NULL)){
+        count++;
+        ret = strtok(NULL, "/");
+    }
+    return count;
 }
 
-unsigned char* parse_name(unsigned char* name){
-    char* ret = strtok((char*)name, "\0");
-    return (unsigned char*)ret;
-}
 
-//helper to print_content()
-int print_permissions(struct inode* inode_entry){
-    int i;
-    if(dir_check(inode_entry)){
-        printf("d");
-    }
-    else{
-        printf("-");
-    }
-    for(i = 0; i < 3; i++){
-        if((inode_entry->mode & (OWNER_R >> i)) != 0){
-            printf("r");
-        }
-        else{
-            printf("-");
-        }
-        if((inode_entry->mode & (OWNER_W >> i)) != 0){
-            printf("w");
-        }
-        else{
-            printf("-");
-        }
-        if((inode_entry->mode & (OWNER_E >> i)) != 0){
-            printf("e");
-        }
-        else{
-            printf("-");
-        }
-    }
-    return 1;
-}
+// helper to read a zone
+void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config) {
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
 
-struct inode* inum_2_inode(int fd, int cur_offset){
-    //TODO: OFFSET IS WRONG, WE NEED TO GO BACKWARDS FROM DATA ZONES TO INODE BASE
-    struct inode* ret = malloc(sizeof(struct inode));
-    ssize_t temp = 0;
-    //need to go backwards from data done, to base inode, plus inode offset
-    if(lseek(fd , cur_offset, SEEK_SET) == -1){//go backwards to inode base
-        fprintf(stderr, "lseek for inum_2_inode failed\n");
-        return NULL;
+    if(config->verbose) {
+        printf("Reading zone %d\n", zone);
     }
-    if((temp = read(fd, ret, sizeof(struct inode))) == -1){
-        fprintf(stderr, "error reading inode, inum_2_inode\n");
-        return NULL;
+
+    if (zone == 0) {
+        memset(buf, 0, zone_size);
+        return;
     }
-    return ret;
+
+    uint32_t offset = fs_start + (zone * sb->blocksize << sb->log_zone_size);
+
+    lseek(fd, offset, SEEK_SET);
+    read(fd, buf, zone_size);
 }
 
 int print_macros(int fd, struct superblock* superblock_entry, struct inode* parent, int inum){
@@ -366,25 +268,90 @@ int print_macros(int fd, struct superblock* superblock_entry, struct inode* pare
             memcpy((void *)temp_buff, (const void*)dir.name, name_len);
             printf(" %s\n", temp_buff);
 
-            //debug prints
-            // printf("dir inode: %d\n", dir.inode);
-            // printf("dir name: %-10s\n", dir.name);
+// converts a file zone index to actual zone number
+// 0 through DIRECT_ZONES + INDIRECT + DOUBLE_INDIRECT
+// actual: the actual zone number
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config) {
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
+    uint32_t per_block = zone_size / sizeof(uint32_t);
 
+    uint32_t buf[per_block];
+
+    // Direct
+    if (index < DIRECT_ZONES)
+        if (config->verbose) {
+            printf("Reading direct zone %d\n", index);
         }
-    }
-    else{
-        //file not directory, read its inode and print contents
-        printf("FILE NOT DIRECTORY\n");
-        inode_read = read(fd, &dir, sizeof(struct directory));
-        if(inode_read == -1){
-            fprintf(stderr, "error when reading dir\n");
-            return -1;
+
+        return node->zone[index];
+
+    index -= DIRECT_ZONES;
+
+    // Indirect
+    if (index < per_block) {
+
+        if (node->indirect == 0)
+            return 0;
+
+        if (config->verbose) {
+            printf("Reading indirect zone %d\n", index);
         }
-        print_permissions(&cur_inode);
-        printf("%10d", dir.inode);
-        printf("'%s'\n", dir.name);
+
+        read_zone2(fd, sb, node->indirect, buf, fs_start, config);
+
+        return buf[index];
     }
-    return 1;
+
+    index -= per_block;
+
+    // Double indirect
+    if (node->two_indirect == 0)
+        return 0;
+
+    if (config->verbose)
+        printf("Reading two indirect zone %d\n", index);
+
+    read_zone2(fd, sb, node->two_indirect, buf, fs_start, config);
+
+    uint32_t first_index = index / per_block;
+    uint32_t second_index = index % per_block;
+
+    uint32_t indirect_zone = buf[first_index];
+
+    if (indirect_zone == 0)
+        return 0;
+
+    read_zone2(fd, sb, indirect_zone, buf, fs_start, config);
+
+    return buf[second_index];
+}
+
+// writes the contents of a file to a destination
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config) {
+    uint32_t zone_size = sb->blocksize << sb->log_zone_size;
+    uint32_t remaining = node->size;
+
+    char *buffer = malloc(zone_size);
+
+    uint32_t zone_index = 0;
+
+    while (remaining > 0) {
+
+        uint32_t zone = get_file_zone(fd, sb, node, zone_index, fs_start, config);
+
+        if (zone == 0) {
+            memset(buffer, 0, zone_size);
+        } else {
+            read_zone2(fd, sb, zone, buffer, fs_start, config);
+        }
+
+        uint32_t write_size = remaining < zone_size ? remaining : zone_size;
+
+        fwrite(buffer, write_size, 1, dst);
+
+        remaining -= write_size;
+        zone_index++;
+    }
 
 }
 
@@ -481,5 +448,7 @@ void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uin
         zone_index++;
     }
 
+    free(buffer);
+}
     free(buffer);
 }
