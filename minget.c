@@ -122,12 +122,12 @@ int main(int argc, char *argv[]) {
         printf("Writing contents of %s to %s\n", config.path, config.copy_path ? config.copy_path : "stdout");
     }
 
-    if(regFile_check(final_inode)){    // check if regular file
+    if(regFile_check(&final_inode)){    // check if regular file
         FILE *f = config.copy_path ? fopen(config.copy_path, "w") : stdout;
         copy_file(fd, f, &superblock_entry, root_inode, (uint32_t)partition_addr, &config);
         config.copy_path ? fclose(f) : 0;
     }
-    else if(dir_check(final_inode)){     // file is directory
+    else if(dir_check(&final_inode)){     // file is directory
         fprintf(stderr, "File is a directory, cannot minget\n");
     }
     else {
