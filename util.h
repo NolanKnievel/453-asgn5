@@ -33,6 +33,8 @@
 
 #define DIRECT_ZONES 7
 
+// #define USAGE_MESSAGE 
+
 //still deciding whether we need this or not, same amount of lines
 #define SUPERBLOCK_CONTENTS "Superblock Contents:\n \
         Store Fields:\n\
@@ -118,7 +120,8 @@ int dir_check(struct inode* inode);
 
 int regFile_check(struct inode* inode);
 
-int calc_datazone_addr(int data_start, uint16_t firstdata, int zonesize, int zone_idx);
+int calc_datazone_addr(int data_start, 
+    uint16_t firstdata, int zonesize, int zone_idx);
 
 int strtok_count(char* path);
 

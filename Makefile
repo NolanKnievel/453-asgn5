@@ -6,7 +6,8 @@ GET_DEP = printers.o reads.o searches.o util.o minget.o
 
 all: minls minget
 
-minls: $(FINAL_DEP)
+
+all: $(FINAL_DEP)
 	$(CC) $(CFLAGS) -o minls $(FINAL_DEP)
 
 minget: $(GET_DEP)

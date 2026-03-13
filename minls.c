@@ -26,11 +26,13 @@ int main(int argc, char *argv[]) {
     struct partition_table_entry partition_entries[NUM_PARTITIONS];
     int partition_addr = 0;
     int ret1 = 0;
-    if ((ret1 = read_partition_table(fd, partition_entries, 0, &config)) == -1) {
+    if ((ret1 = read_partition_table(fd, partition_entries, 0, 
+            &config)) == -1) {
         //printf("no partition found\n");
         // no partition table
         if(config.part != -1) {
-            fprintf(stderr, "Partition specified but no partition table found\n");
+            fprintf(stderr, 
+                "Partition specified but no partition table found\n");
             return 1;
         }
     }
@@ -42,19 +44,22 @@ int main(int argc, char *argv[]) {
         //this address gets us to partition table (if it exists)
         //printf("finding partition addr...\n");
         if(config.part != -1)
-        partition_addr = partition_entries[config.part - 1].lFirst * BYTES_PER_SECTOR;
+        partition_addr = 
+            partition_entries[config.part].lFirst * BYTES_PER_SECTOR;
     }
 
     /* -----FIND SUBPARTITIONS-----*/
     // get array of subpartitions (optional)
     if(config.subpart != -1){
         //redefining partition_entries for subpartition
-        if(read_partition_table(fd, partition_entries, partition_addr, &config) == -1){
+        if(read_partition_table(fd, partition_entries, 
+                partition_addr, &config) == -1){
             fprintf(stderr, "Failed to read subpartition table\n");
             return 1;
         } 
         //resetting partition addr for subpartition
-        partition_addr = partition_entries[config.subpart - 1].lFirst * BYTES_PER_SECTOR;
+        partition_addr = 
+            partition_entries[config.subpart].lFirst * BYTES_PER_SECTOR;
     }
 
     /* -----FIND SUPERBLOCK-----*/
@@ -70,6 +75,7 @@ int main(int argc, char *argv[]) {
     struct inode *root_inode = malloc(sizeof(struct inode));
     if (root_inode == NULL) {
         perror("malloc");
+        free(root_inode);
         return 1;
     }
 
@@ -87,14 +93,15 @@ int main(int argc, char *argv[]) {
     //make sure root is a directory
     if(dir_check(root_inode) == 0){
         fprintf(stderr, "Root is not directory\n");
+        free(root_inode);
         return 1;
     }
     /* ----- CALCULATE OFFSETS ----- */
-    int zonesize = superblock_entry.blocksize << superblock_entry.log_zone_size;
-    off_t data_start = partition_addr + (off_t)(superblock_entry.firstdata * zonesize);
+    int zonesize = 
+        superblock_entry.blocksize << superblock_entry.log_zone_size;
 
     /* -----PATH NOT GIVEN, PRINT ROOT CONTENTS-----*/
-    //if path not given
+    //if path not given, print root directory contents
     if(strcmp(config.path, "/") == 0){
         //print root directory contents
         if(config.verbose){
@@ -102,78 +109,72 @@ int main(int argc, char *argv[]) {
             print_inode(root_inode);
         }
         print_path(&config);
-        print_macros_dir(fd, superblock_entry.firstdata, root_inode, zonesize, inode_start, data_start);
+        print_macros_dir(fd, &superblock_entry, root_inode, zonesize, 
+            inode_start, partition_addr);
         return 0;
     }
     /* ----- PATH GIVEN, SEARCH FOR FILE ------*/
     //pointers to hold data of final file in path
-    struct directory* final_dir = NULL;
-    struct inode* final_inode = NULL;
+    struct directory* final_dir = malloc(sizeof(struct directory));
+    struct inode* final_inode = malloc(sizeof(struct inode));
     //want wrapper
-    int ret = search_all(fd, &config, superblock_entry.blocksize, root_inode, inode_start, zonesize, final_dir, final_inode);
+    int ret = search_all(fd, &superblock_entry, 
+        root_inode, partition_addr, 
+        inode_start, config.path, 
+        final_dir, final_inode);
+
     //file not found
     if(ret == 0){
         fprintf(stderr, "search_all: File not found!\n");
+        free(final_dir);
+        free(final_inode);
+        free(root_inode);
         return 1;
     }
     //error
     if(ret == -1){
         fprintf(stderr, "search_all: Error!\n");
+        free(final_dir);
+        free(final_inode);
+        free(root_inode);
         return 1;
     }
     /*----- PRINT CONTENTS -----*/
     //find whether last file is directory or regular file
+    if(config.verbose){
+            print_superblock(&superblock_entry);
+            print_inode(final_inode);
+    }
     if(dir_check(final_inode)){
-        ret = print_macros_dir(fd, superblock_entry.firstdata, final_inode, zonesize, inode_start, data_start);
+        ret = print_macros_dir(fd, &superblock_entry, final_inode, 
+            zonesize, inode_start, partition_addr);
         if(ret == -1){
             fprintf(stderr, "print_macros_dir\n");
+            free(final_dir);
+            free(final_inode);
+            free(root_inode);
             return 1;
         }
     }
     else if(regFile_check(final_inode)){
+
         ret = print_macros_file(final_dir, final_inode);
         if(ret == -1){
             fprintf(stderr, "print_macros_dir\n");
-        return 1;
+            free(final_dir);
+            free(final_inode);
+            free(root_inode);
+            return 1;
         }
     }
     
     // cleanup
     close(fd);
+    free(final_dir);
+    free(final_inode);
     free(root_inode);
 
-    printf("hello world!\n");
+    //printf("hello world!\n");
 
     return 0;
 }
-
-/*
-PLAN: 
-TODO: IMPLEMENT INDIRECT/DOUBLE-INDIRECT READS
-need to start abstracting and learn how to implement indirect
-- after reading superblock, we know where inode table and data_start is
-- to confirm the file exists
-    - we need the starting inode
-    - iterate through its data zones
-        - iterate through data zone to find file
-    - once file is found, keep its inode 
-    - TODO: safe prev token
-- what we have available: inode number
-- need to read_inode for inode struct
-- to print file contents 
-    - need inode struct and directory struct
-    - if it's a directory
-        - we need to iterate through data zones (inode->zones)
-            - need inode->zones[i], data_start to read zone
-            - extract directory for name and inode
-            - use inode to read_inode for permissions
-            - print
-    - if it's a file
-        - iterate through data zone of prev token (yikes) and look for the inode number
-            - need inode->zone[i] (of prev token (yikes)), data_start to read zone
-            - once found, extract directory
-        - use directory and inode structs for printing
-       
-
-
-*/
