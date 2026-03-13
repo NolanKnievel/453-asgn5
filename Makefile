@@ -4,6 +4,8 @@ HELPERS = printers.h reads.h searches.h util.h minls.h
 FINAL_DEP = printers.o reads.o searches.o util.o minls.o
 GET_DEP = printers.o reads.o searches.o util.o minget.o
 
+all: minls minget
+
 minls: $(FINAL_DEP)
 	$(CC) $(CFLAGS) -o minls $(FINAL_DEP)
 
