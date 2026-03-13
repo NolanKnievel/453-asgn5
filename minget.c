@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     /* ----- CALCULATE OFFSETS ----- */
     int zonesize = superblock_entry.blocksize << superblock_entry.log_zone_size;
     off_t data_start = partition_addr + (off_t)(superblock_entry.firstdata * zonesize);
-    data_start ++;
+    // data_start ++;
 
     /* -----PATH NOT GIVEN, ERROR-----*/
     //if path not given
@@ -102,11 +102,11 @@ int main(int argc, char *argv[]) {
     }
     /* ----- PATH GIVEN, SEARCH FOR FILE ------*/
     //pointers to hold data of final file in path
-    struct directory* final_dir = NULL;
-    struct inode* final_inode = NULL;
+    struct directory final_dir = {0};
+    struct inode final_inode = {0};
     //want wrapper
     printf("copying: \n");
-    int ret = search_all(fd, &config, superblock_entry.blocksize, root_inode, inode_start, zonesize, final_dir, final_inode);
+    int ret = search_all(fd, &config, superblock_entry.blocksize, root_inode, inode_start, zonesize, &final_dir, &final_inode);
     //file not found
     if(ret == 0){
         fprintf(stderr, "search_all: File not found!\n");
