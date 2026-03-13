@@ -55,7 +55,8 @@ typedef struct {
     int part; // defaults to -1 if not provided - no partition
     int subpart; // defaults to -1 if not provided - no subpartition
     char *imagefile; // required
-    char *path; // defaults to '/' if not provided. '/' added to path
+    char *path; // defaults to '/' if not provided. '/' added to paths not including one
+    char *copy_path; // for minget -- path to copy to
 } Config;
 
 
@@ -110,7 +111,10 @@ struct __attribute__((packed)) directory {
     unsigned char name[MAX_DIR_NAME_SIZE_BYTES];
 };
 
-int parse_args(int argc, char *argv[], Config *config);
+int parse_ls_args(int argc, char *argv[], Config *config);
+
+int parse_get_args(int argc, char *argv[], Config *config);
+
 
 int dir_check(struct inode* inode);
 
@@ -120,3 +124,9 @@ int calc_datazone_addr(int data_start,
     uint16_t firstdata, int zonesize, int zone_idx);
 
 int strtok_count(char* path);
+
+void read_zone2(int fd, struct superblock *sb, uint32_t zone, void *buf, uint32_t fs_start, Config *config);
+
+uint32_t get_file_zone(int fd, struct superblock *sb, struct inode *node, uint32_t index, uint32_t fs_start, Config *config);
+
+void copy_file(int fd, FILE *dst, struct superblock *sb, struct inode *node, uint32_t fs_start, Config *config);

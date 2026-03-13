@@ -10,8 +10,7 @@ int main(int argc, char *argv[]) {
         printf(USAGE_MESSAGE);
         return 1;
     }
-    if(parse_args(argc, argv, &config) == -1){
-        fprintf(stderr, "error while parsing\n");
+    if(parse_ls_args(argc, argv, &config) == -1) {
         return 1;
     }
 

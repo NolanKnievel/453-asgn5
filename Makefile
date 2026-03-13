@@ -2,13 +2,22 @@ CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 HELPERS = printers.h reads.h searches.h util.h minls.h
 FINAL_DEP = printers.o reads.o searches.o util.o minls.o
+GET_DEP = printers.o reads.o searches.o util.o minget.o
+
+all: minls minget
 
 
 all: $(FINAL_DEP)
 	$(CC) $(CFLAGS) -o minls $(FINAL_DEP)
 
+minget: $(GET_DEP)
+	$(CC) $(CFLAGS) -o minget $(GET_DEP)
+
 minls.o: minls.c minls.h
 	$(CC) $(CFLAGS) -c minls.c
+
+minget.o: minget.c minget.h
+	$(CC) $(CFLAGS) -c minget.c
 
 printers.o: util.o reads.o printers.c printers.h 
 	$(CC) $(CFLAGS) -c printers.c
